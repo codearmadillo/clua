@@ -19,6 +19,7 @@ add_executable(${CMAKE_PROJECT_NAME} main.cpp include/foundation/window.cpp)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor/glfw)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor/glew)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor/glm)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor/lua)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
 #######################################################
@@ -33,4 +34,4 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_D
 #######################################################
 ### Link libraries
 #######################################################
-target_link_libraries(${CMAKE_PROJECT_NAME} glfw libglew_static IMGUI glm)
+target_link_libraries(${CMAKE_PROJECT_NAME} glfw libglew_static IMGUI glm lua_static)
