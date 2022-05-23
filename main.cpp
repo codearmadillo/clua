@@ -16,9 +16,27 @@ struct TestObject {
     bool global;
 };
 
+class Application {
+private:
+    static Lua* m_luaModule;
+public:
+    static void InitializeModules() {
+        // Could be smart pointer
+        m_luaModule = new Lua();
+    }
+    static void TerminateModules() {
+        delete Application::m_luaModule;
+    }
+    static Lua* GetLuaModule() {
+        return Application::m_luaModule;
+    }
+};
+
 int main() {
 
-    Lua lua;
+    Application::InitializeModules();
+
+    const auto lua = Application::GetLuaModule();
 
     std::vector<TestObject> tests {
         { "localTest", 1.0f, false },
@@ -45,10 +63,12 @@ int main() {
      */
 
     for (const auto i : tests) {
-        lua.SetFloat(i.name, i.value, i.global);
+        lua->SetFloat(i.name, i.value, i.global);
     }
 
-    lua.Run(lua_static_script.c_str());
+    lua->Run(lua_static_script.c_str());
+
+    Application::TerminateModules();
 
     return 0;
 }
