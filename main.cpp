@@ -1,17 +1,18 @@
 #include <iostream>
-#include <vector>
-#include <sstream>
-
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
 
 #include "foundation/lua.h"
+#include "foundation/window.h"
 
 const std::string lua_script = R"(
     print(clua.engine.version)
 )";
 
 int main() {
+
+    Window::getInstance()
+        .setWindowTitle("My nice window")
+        .setWindowClearColor({ 1.0f, 1.0f, 1.0f, 0.0f })
+        .start();
 
     Lua::getInstance()
         .push(1)
