@@ -1,9 +1,6 @@
-clua.start = function()
-    clua.window.setWidth(1024)
-    clua.window.setHeight(768)
-    clua.window.setTitle('My new game')
+function clua.update(dt)
+    print(dt)
 end
-
-clua.update = function()
-    print("update from lua")
+function clua.start()
+    print('start')
 end

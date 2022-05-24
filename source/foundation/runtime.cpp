@@ -11,19 +11,20 @@ void Runtime::onBeforeWindowStart() {
 void Runtime::onWindowUpdate() {
     Lua::getInstance()
         .get("update")
-        .push(20)
+        .push(Window::getInstance().getDeltaTime())
         .pcall(1, 0);
 }
 void Runtime::setBindings() {
     Lua::getInstance()
         // Default Start and Update functions
         .push([](lua_State* lua){
-            std::cout << "Starting\n";
+            std::cout << "start from cpp\n";
             return 0;
         })
         .bind("start")
         .push([](lua_State* lua){
-            std::cout << "Update\n";
+            double dt = luaL_checknumber(lua, 1);
+            std::cout << "update from cpp with delta " << dt << "\n";
             return 0;
         })
         .bind("update");

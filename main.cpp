@@ -8,8 +8,14 @@
 
 int main() {
 
-    // Load Lua scripts
-    auto scripts = utils::read_file("../main.lua");
+    const char* lua_script = R"(
+        function clua.start()
+            print('start')
+        end
+        function clua.update(dt)
+            print(dt)
+        end
+    )";
 
     // Set runtime bindings
     Runtime::getInstance().setBindings();
@@ -18,7 +24,7 @@ int main() {
     Window::getInstance().setBindings();
 
     // Call Lua script with already attached bindings
-    Lua::getInstance().pcall(scripts.c_str(), 0, 0);
+    Lua::getInstance().pcall(lua_script, 0, 0);
 
     // Run window
     Window::getInstance().start();

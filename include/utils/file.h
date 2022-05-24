@@ -3,13 +3,12 @@
 #include <fstream>
 
 namespace utils {
-    std::string read_file(const char* path) {
-        std::string out;
+    const char* read_file(const char* path) {
+        std::string line, output;
         std::ifstream in(path);
-        for(std::string line; getline( in, line ); )
-        {
-            out.append(line);
+        while(std::getline(in, line)) {
+            output += line + "\n";
         }
-        return out;
+        return output.c_str();
     }
 }
