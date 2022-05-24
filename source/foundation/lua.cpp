@@ -12,12 +12,12 @@ Lua::Lua(): m_state(luaL_newstate()) {
 Lua::~Lua() {
     lua_close(m_state);
 }
-void Lua::dump() {
+Lua& Lua::dump() {
     int top = lua_gettop(m_state);
     std::cout << "------------------- Starting Lua stack dump -------------------\n";
     if (top == 0) {
         std::cout << "Stack is empty\n";
-        return;
+        return *this;
     }
     for (int i = 1; i <= top; i++) {
         printf("%d\t%s\t", i, luaL_typename(m_state,i));
@@ -40,8 +40,9 @@ void Lua::dump() {
         }
     }
     std::cout << "------------------ Lua dump finished -------------------\n\n\n";
+    return *this;
 }
-void Lua::bind(const char* name) {
+Lua& Lua::bind(const char* name) {
 
     // this is also where the value that will be added to stack lives
     const int stack_offset = lua_gettop(m_state);
@@ -123,13 +124,17 @@ void Lua::bind(const char* name) {
      * LUA_TTHREAD
      * LUA_TLIGHTUSERDATA
      */
+
+    return *this;
+
 }
-void Lua::call(const char* script, int nargs, int nresults) {
+Lua& Lua::call(const char* script, int nargs, int nresults) {
     (void) luaL_loadstring(m_state, script);
     lua_insert(m_state, -nargs - 1);
     (void)lua_call(m_state, nargs, nresults);
+    return *this;
 }
-void Lua::pcall(const char *script, int nargs, int nresults) {
+Lua& Lua::pcall(const char *script, int nargs, int nresults) {
     (void) luaL_loadstring(m_state, script);
     lua_insert(m_state, -nargs - 1);
     const int result = lua_pcall(m_state, nargs, nresults, -2);
@@ -153,4 +158,40 @@ void Lua::pcall(const char *script, int nargs, int nresults) {
             lua_pop(m_state, 1);
             break;
     }
+    return *this;
+}
+
+Lua& Lua::push() {
+    lua_pushnil(m_state);
+    return *this;
+}
+
+Lua& Lua::pushvalue(const int &index) {
+    lua_pushvalue(m_state, index);
+    return *this;
+}
+
+Lua& Lua::push(const float &n) {
+    lua_pushnumber(m_state, n);
+    return *this;
+}
+
+Lua& Lua::push(const int &n) {
+    lua_pushinteger(m_state, n);
+    return *this;
+}
+
+Lua& Lua::push(const char *n) {
+    lua_pushstring(m_state, n);
+    return *this;
+}
+
+Lua& Lua::push(const bool &n) {
+    lua_pushboolean(m_state, n);
+    return *this;
+}
+
+Lua& Lua::push(int (*c)(lua_State *)) {
+    lua_pushcfunction(m_state, c);
+    return *this;
 }

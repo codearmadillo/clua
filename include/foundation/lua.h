@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 
 extern "C" {
     #include <lua.h>
@@ -12,11 +13,20 @@ class Lua {
             static Lua instance;
             return instance;
         }
-        void dump();
-        void bind(const char* name);
-        void call(const char* script, int nargs = 0, int nresults = 0);
-        void pcall(const char* script, int nargs = 0, int nresults = 0);
+        Lua& dump();
+        Lua& bind(const char* name);
+        Lua& call(const char* script, int nargs = 0, int nresults = 0);
+        Lua& pcall(const char* script, int nargs = 0, int nresults = 0);
         lua_State* rawState() { return m_state; }
+
+        /** Push methods */
+        Lua& push();
+        Lua& pushvalue(const int& index);
+        Lua& push(const float& n);
+        Lua& push(const int& n);
+        Lua& push(const char* n);
+        Lua& push(const bool& n);
+        Lua& push(int (*c)(lua_State*));
     private:
         Lua();
         ~Lua();

@@ -11,13 +11,12 @@ const std::string lua_script = R"(
     print(clua.engine.version)
 )";
 
-
 int main() {
 
-    lua_pushnumber(Lua::getInstance().rawState(), 0.1);
-
-    Lua::getInstance().bind("engine.version");
-    Lua::getInstance().pcall(lua_script.c_str(), 0, 0);
+    Lua::getInstance()
+        .push(1)
+        .bind("engine.version")
+        .pcall(lua_script.c_str(), 0, 0);
 
     return 0;
 }
