@@ -3,6 +3,8 @@
 #include "foundation/window.h"
 #include "foundation/runtime.h"
 #include "foundation/lua.h"
+#include "foundation/keyboard.h"
+
 
 Window::Window(): m_deltaTime(0.0), m_lastFrameTime(0.0) {
     if (!glfwInit())
@@ -16,7 +18,6 @@ Window::Window(): m_deltaTime(0.0), m_lastFrameTime(0.0) {
 Window::~Window() {
     terminate();
 }
-
 void Window::start() {
     m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
     if (m_window == nullptr) {
@@ -41,6 +42,9 @@ void Window::start() {
 
     // Call runtime method
     Runtime::getInstance().onBeforeWindowStart();
+
+    // Set callback
+    glfwSetKeyCallback(m_window, Keyboard::glfwKeyCallback);
 
     // Start loop
     while (!glfwWindowShouldClose(m_window)) {

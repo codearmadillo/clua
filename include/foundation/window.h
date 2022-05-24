@@ -4,6 +4,7 @@
 #include "GLFW/glfw3.h"
 
 #include "glm/vec4.hpp"
+#include <string>
 
 class Window {
     public:
@@ -22,6 +23,7 @@ class Window {
         Window& setWindowFlags();
         Window& setWindowClearColor(const glm::vec4& color);
         double getDeltaTime() const;
+        GLFWwindow* getWindow() const { return m_window; }
     private:
         Window();
         ~Window();
