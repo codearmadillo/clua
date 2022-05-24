@@ -11,9 +11,14 @@ class Window {
             static Window instance;
             return instance;
         }
+        Window(Window const&)          = delete;
+        void operator=(Window const&)  = delete;
         void start();
+        Window& setBindings();
         Window& setWindowTitle(const char* title);
         Window& setWindowSize(int width, int height);
+        Window& setWindowWidth(int width);
+        Window& setWindowHeight(int height);
         Window& setWindowFlags();
         Window& setWindowClearColor(const glm::vec4& color);
         double getDeltaTime() const;
@@ -21,6 +26,7 @@ class Window {
         Window();
         ~Window();
         void terminate();
+        void onWindowSizeChanged();
     private:
         GLFWwindow* m_window;
         int m_width { 800 };

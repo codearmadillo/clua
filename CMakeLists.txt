@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 20)
 #######################################################
 ### Add executable files
 #######################################################
-add_executable(${CMAKE_PROJECT_NAME} main.cpp include/foundation/lua.h source/foundation/lua.cpp include/utils/string.h include/foundation/window.h source/foundation/window.cpp)
+add_executable(${CMAKE_PROJECT_NAME} main.cpp include/foundation/lua.h source/foundation/lua.cpp include/utils/string.h include/foundation/window.h source/foundation/window.cpp include/foundation/runtime.h source/foundation/runtime.cpp)
 
 #######################################################
 ### Add subdirectories

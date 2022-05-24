@@ -13,6 +13,9 @@ class Lua {
             static Lua instance;
             return instance;
         }
+        Lua(Lua const&)         = delete;
+        void operator=(Lua const&)  = delete;
+
         Lua& dump();
         Lua& bind(const char* name);
         Lua& call(const char* script, int nargs = 0, int nresults = 0);
@@ -22,6 +25,7 @@ class Lua {
         /** Push methods */
         Lua& push();
         Lua& pushvalue(const int& index);
+        Lua& push(const double& n);
         Lua& push(const float& n);
         Lua& push(const int& n);
         Lua& push(const char* n);
@@ -33,7 +37,4 @@ class Lua {
     private:
         lua_State* m_state;
         const char* m_libName { "clua" };
-    public:
-        Lua(Lua const&) = delete;
-        void operator=(Lua const&) = delete;
 };

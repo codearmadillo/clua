@@ -1,6 +1,8 @@
 #include <stdexcept>
 #include <iostream>
 #include "foundation/window.h"
+#include "foundation/runtime.h"
+#include "foundation/lua.h"
 
 Window::Window(): m_deltaTime(0.0), m_lastFrameTime(0.0) {
     if (!glfwInit())
@@ -37,6 +39,9 @@ void Window::start() {
     // Store current time
     m_lastFrameTime = glfwGetTime();
 
+    // Call runtime method
+    Runtime::getInstance().onBeforeWindowStart();
+
     // Start loop
     while (!glfwWindowShouldClose(m_window)) {
         glfwPollEvents();
@@ -48,6 +53,7 @@ void Window::start() {
         m_lastFrameTime = currentFrameTime;
 
         // Application update loop
+        Runtime::getInstance().onWindowUpdate();
 
         glfwSwapBuffers(m_window);
     }
@@ -63,8 +69,19 @@ Window &Window::setWindowTitle(const char *title) {
 Window &Window::setWindowSize(const int width, const int height) {
     m_width = width;
     m_height = height;
-    if(m_window)
-        glfwSetWindowSize(m_window, m_width, m_height);
+    onWindowSizeChanged();
+    return *this;
+}
+
+Window &Window::setWindowWidth(int width) {
+    m_width = width;
+    onWindowSizeChanged();
+    return *this;
+}
+
+Window &Window::setWindowHeight(int height) {
+    m_height = height;
+    onWindowSizeChanged();
     return *this;
 }
 
@@ -91,4 +108,36 @@ void Window::terminate() {
     if (m_window)
         glfwDestroyWindow(m_window);
     glfwTerminate();
+}
+
+Window &Window::setBindings() {
+    Lua::getInstance()
+        // Window Width
+        .push([](lua_State* lua){
+            auto width = luaL_checknumber(lua, 1);
+            Window::getInstance().setWindowWidth(static_cast<int>(width));
+            return 0;
+        })
+        .bind("window.setWidth")
+        // Window Height
+        .push([](lua_State* lua){
+            auto height = luaL_checknumber(lua, 1);
+            Window::getInstance().setWindowHeight(static_cast<int>(height));
+            return 0;
+        })
+        .bind("window.setHeight")
+        // Window title
+        .push([](lua_State* lua){
+            auto title = luaL_checkstring(lua, 1);
+            Window::getInstance().setWindowTitle(title);
+            return 0;
+        })
+        .bind("window.setTitle");
+
+    return *this;
+}
+
+void Window::onWindowSizeChanged() {
+    if(m_window)
+        glfwSetWindowSize(m_window, m_width, m_height);
 }

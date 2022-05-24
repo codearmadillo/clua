@@ -195,3 +195,8 @@ Lua& Lua::push(int (*c)(lua_State *)) {
     lua_pushcfunction(m_state, c);
     return *this;
 }
+
+Lua &Lua::push(const double &n) {
+    lua_pushnumber(m_state, n);
+    return *this;
+}

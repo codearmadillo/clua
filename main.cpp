@@ -2,22 +2,29 @@
 
 #include "foundation/lua.h"
 #include "foundation/window.h"
+#include "foundation/runtime.h"
 
 const std::string lua_script = R"(
-    print(clua.engine.version)
+    clua.start = function()
+        clua.window.setWidth(1024)
+        clua.window.setHeight(768)
+        clua.window.setTitle('My new game')
+    end
 )";
 
 int main() {
 
-    Window::getInstance()
-        .setWindowTitle("My nice window")
-        .setWindowClearColor({ 1.0f, 1.0f, 1.0f, 0.0f })
-        .start();
+    // Set runtime bindings
+    Runtime::getInstance().setBindings();
 
-    Lua::getInstance()
-        .push(1)
-        .bind("engine.version")
-        .pcall(lua_script.c_str(), 0, 0);
+    // Set window bindings
+    Window::getInstance().setBindings();
+
+    // Call Lua script with already attached bindings
+    Lua::getInstance().pcall(lua_script.c_str(), 0, 0);
+
+    // Run window
+    Window::getInstance().start();
 
     return 0;
 }
