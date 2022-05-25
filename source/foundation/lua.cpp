@@ -269,3 +269,13 @@ Lua &Lua::push(const double &n) {
     lua_pushnumber(m_state, n);
     return *this;
 }
+
+bool Lua::load_file(const char *path, const char* mode) {
+    auto status = luaL_loadfilex(m_state, path, mode);
+    if (status != LUA_OK) {
+        std::cerr << lua_tostring(m_state, -1) << "\n";
+        lua_pop(m_state, 1);
+        return false;
+    }
+    return true;
+}

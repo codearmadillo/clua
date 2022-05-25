@@ -21,8 +21,6 @@ int main() {
         function clua.update(dt)
             if (clua.keyboard.isKeyDown('a')) then
                 print('a is down')
-            else
-                print('a is not down')
             end
         end
         function clua.keyboard.keyUp(key)
@@ -39,7 +37,10 @@ int main() {
     Window::getInstance().setBindings();
 
     // Call Lua script with already attached bindings
-    Lua::getInstance().pcall(lua_script, 0, 0);
+    auto scriptLoaded = Lua::getInstance().load_file("../main.lua");
+    if (scriptLoaded) {
+        Lua::getInstance().pcall(0, 0);
+    }
 
     // Run window
     Window::getInstance().start();

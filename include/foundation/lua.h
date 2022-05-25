@@ -38,6 +38,7 @@ class Lua {
          * @return
          */
         Lua& pcall(int nargs = 0, int nresults = 0);
+        bool load_file(const char* path, const char* mode = "bt");
         Lua& load_string(const char* script);
         lua_State* rawState() { return m_state; }
 
