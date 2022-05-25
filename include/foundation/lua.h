@@ -51,6 +51,7 @@ class Lua {
         Lua& push(const char* n);
         Lua& push(const bool& n);
         Lua& push(int (*c)(lua_State*));
+        void static assertArguments(lua_State* lua, int n);
     private:
         Lua();
         ~Lua();

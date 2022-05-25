@@ -32,12 +32,12 @@ end
 ```
 
 ### Window
-| Command                 | Description            | Usage  | Arguments        |
-|-------------------------|------------------------|--------|------------------|
-| `clua.window.setWidth`  | Sets new window width  | Method | width [`int`]    |
-| `clua.window.setHeight` | Sets new window height | Method | height [`int`]   |
-| `clua.window.setTitle`  | Sets new window title  | Method | title [`string`] |
-
+| Command                 | Description            | Usage  | Arguments                     |
+|-------------------------|------------------------|--------|-------------------------------|
+| `clua.window.setWidth`  | Sets new window width  | Method | width [`int`]                 |
+| `clua.window.setHeight` | Sets new window height | Method | height [`int`]                |
+| `clua.window.setTitle`  | Sets new window title  | Method | title [`string`]              |
+| `clua.window.setSize` | Sets new window size | Method | width [`int`], height [`int`] |
 
 #### Usage
 _main.lua_
@@ -47,6 +47,9 @@ function clua.start()
     -- Set window size
     clua.window.setWidth(800)
     clua.window.setHeight(600)
+    -- Possible shorthand
+    clua.window.setSize(800, 600)
+    -- Set window title
     clua.window.setTitle('My new game')
 end
 ```

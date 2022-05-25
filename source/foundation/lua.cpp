@@ -279,3 +279,11 @@ bool Lua::load_file(const char *path, const char* mode) {
     }
     return true;
 }
+
+void Lua::assertArguments(lua_State* lua, int n)
+{
+    int count = lua_gettop(lua);
+    if (count != n) {
+        std::string err("Expected " + std::to_string(n) + " arguments but received " + std::to_string(count) + " instead\n");
+    }
+}

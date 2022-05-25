@@ -118,22 +118,43 @@ Window &Window::setBindings() {
     Lua::getInstance()
         // Window Width
         .push([](lua_State* lua){
+            Lua::assertArguments(lua, 1);
+
             auto width = luaL_checknumber(lua, 1);
             Window::getInstance().setWindowWidth(static_cast<int>(width));
+
             return 0;
         })
         .bind("window.setWidth")
         // Window Height
         .push([](lua_State* lua){
+            Lua::assertArguments(lua, 1);
+
             auto height = luaL_checknumber(lua, 1);
             Window::getInstance().setWindowHeight(static_cast<int>(height));
+
             return 0;
         })
         .bind("window.setHeight")
+        // Window size
+        .push([](lua_State* lua){
+            Lua::assertArguments(lua, 2);
+
+            auto width = luaL_checknumber(lua, 1);
+            auto height = luaL_checknumber(lua, 2);
+
+            Window::getInstance().setWindowSize(width, height);
+
+            return 0;
+        })
+        .bind("window.setSize")
         // Window title
         .push([](lua_State* lua){
+            Lua::assertArguments(lua, 1);
+
             auto title = luaL_checkstring(lua, 1);
             Window::getInstance().setWindowTitle(title);
+
             return 0;
         })
         .bind("window.setTitle");
