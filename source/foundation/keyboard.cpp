@@ -14,11 +14,11 @@ void Keyboard::setBindings() {
         .push([](lua_State* lua){
             return 0;
         })
-        .bind("keyboard.keyDown")
+        .bind("keyboard.keyPressed")
         .push([](lua_State* lua){
             return 0;
         })
-        .bind("keyboard.keyUp")
+        .bind("keyboard.keyReleased")
         .push([](lua_State* lua){
             auto keyName = luaL_checkstring(lua, 1);
             auto keyState = Keyboard::getInstance().getKeyState(keyName);
@@ -41,6 +41,9 @@ void Keyboard::setKeyMap(int key, int scancode, int action) {
             fireOnKeyDown(key, scancode);
         }
     } else {
+        if (m_keys[scancode] == isKeyPressed) {
+            return;
+        }
         m_keys[scancode] = isKeyPressed;
         if (isKeyPressed) {
             fireOnKeyDown(key, scancode);
@@ -55,7 +58,7 @@ void Keyboard::fireOnKeyDown(int key, int scancode) {
         return;
     }
     Lua::getInstance()
-        .get("keyboard.keyDown")
+        .get("keyboard.keyPressed")
         .push(name)
         .pcall(1, 0);
 }
@@ -65,7 +68,7 @@ void Keyboard::fireOnKeyUp(int key, int scancode) {
         return;
     }
     Lua::getInstance()
-            .get("keyboard.keyUp")
+            .get("keyboard.keyReleased")
             .push(name)
             .pcall(1, 0);
 }

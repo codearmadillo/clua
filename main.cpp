@@ -9,28 +9,6 @@
 
 int main() {
 
-    const char* lua_script = R"(
-        --[[
-        function clua.start()
-            print('start')
-        end
-        function clua.update(dt)
-            print(dt)
-        end
-        --]]
-        function clua.update(dt)
-            if (clua.keyboard.isKeyDown('a')) then
-                print('a is down')
-            end
-        end
-        function clua.keyboard.keyUp(key)
-            print('released ' .. key);
-        end
-        function clua.keyboard.keyDown(key)
-            print('pressed ' .. key);
-        end
-    )";
-
     // Bindings
     Runtime::getInstance().setBindings();
     Keyboard::getInstance().setBindings();
