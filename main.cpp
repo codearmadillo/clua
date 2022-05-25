@@ -1,22 +1,20 @@
 #include <iostream>
-#include <vector>
-#include <sstream>
-
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
 
 #include "foundation/lua.h"
+#include "foundation/window.h"
+#include "foundation/runtime.h"
+#include "foundation/keyboard.h"
 
-const std::string lua_script = R"(
-    print(clua.engine.version)
-)";
+#include "utils/file.h"
 
 int main() {
+    Runtime::getInstance().setBindings();
+    Keyboard::getInstance().setBindings();
+    Window::getInstance().setBindings();
 
-    Lua::getInstance()
-        .push(1)
-        .bind("engine.version")
-        .pcall(lua_script.c_str(), 0, 0);
+    Runtime::getInstance().loadScripts();
+
+    Window::getInstance().start();
 
     return 0;
 }
