@@ -31,3 +31,10 @@ Runtime::Runtime() {
 }
 Runtime::~Runtime() {
 }
+
+void Runtime::loadScripts() {
+    auto loaded = Lua::getInstance().load_file("main.lua");
+    if(loaded) {
+        Lua::getInstance().pcall(0, 0);
+    }
+}

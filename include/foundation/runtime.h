@@ -11,6 +11,7 @@ class Runtime {
         Runtime(Runtime const&)         = delete;
         void operator=(Runtime const&)  = delete;
         void setBindings();
+        void loadScripts();
     private:
         Runtime();
         ~Runtime();
