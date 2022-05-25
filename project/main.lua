@@ -1,3 +1,5 @@
+require "player"
+
 local width = 960
 local ratio = 0.75
 local factor = 25;
