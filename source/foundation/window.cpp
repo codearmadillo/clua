@@ -4,7 +4,10 @@
 #include "foundation/runtime.h"
 #include "foundation/lua.h"
 #include "foundation/keyboard.h"
-
+#include "foundation/rendering.h"
+#include "rendering/element.h"
+#include "rendering/vertex.h"
+#include "rendering/object-buffer.h"
 
 Window::Window(): m_deltaTime(0.0), m_lastFrameTime(0.0) {
     if (!glfwInit())
@@ -32,6 +35,17 @@ void Window::start() {
         terminate();
         throw std::runtime_error("glew initialization failed");
     }
+
+    // Initialize module
+    Rendering::Module::getInstance().onBeforeWindowStart();
+
+
+
+
+
+
+
+
 
     // GL pre-configuration
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
