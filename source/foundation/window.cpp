@@ -49,10 +49,10 @@ void Window::start() {
             Rendering::Element(1), Rendering::Element(2), Rendering::Element(3)
     };
     std::vector<Rendering::Vertex> vertices = {
-            Rendering::Vertex({ 0.5f, 0.5f, 0.0f }),
-            Rendering::Vertex({ 0.5f, -0.5f, 0.0f }),
-            Rendering::Vertex({ -0.5f, -0.5f, 0.0f }),
-            Rendering::Vertex({ -0.5f, 0.5f, 0.0f }),
+            Rendering::Vertex({ 0.5f, 0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f }),
+            Rendering::Vertex({ 0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }),
+            Rendering::Vertex({ -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f }),
+            Rendering::Vertex({ -0.5f, 0.5f, 0.0f }, { 1.0f, 1.0f, 0.0f, 1.0f }),
     };
 
     Rendering::ObjectBuffer objectBuffer;

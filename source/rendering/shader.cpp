@@ -6,10 +6,28 @@
 #include "GLFW/glfw3.h"
 
 namespace Rendering {
-    Shader& Shader::Attach(uint32_t type, const char* source, uint8_t count, bool sourceIsFile) {
+    Shader::~Shader() {
+        unbind();
+        glDeleteProgram(m_program);
+    }
+    Shader& Shader::bind() {
+        if (m_program == 0) {
+            m_program = glCreateProgram();
+        }
+        glUseProgram(m_program);
+        return *this;
+    }
+    Shader& Shader::unbind() {
+        glUseProgram(0);
+        return *this;
+    }
+    Shader& Shader::attach(uint32_t type, const char* source, uint8_t count, bool sourceIsFile) {
         if(sourceIsFile) {
             throw std::runtime_error("ERROR::SHADER::ATTACH: File source is not supported");
         }
+
+        // Bind shader
+        bind();
 
         /** Create shader */
         unsigned int shader = glCreateShader(type);
@@ -41,9 +59,12 @@ namespace Rendering {
         /** Store for cleanup later */
         m_shaders.push_back(shader);
 
-        return *this;
+        return unbind();
     }
-    Shader& Shader::Compile() {
+    Shader& Shader::compile() {
+        /** Bind shader */
+        bind();
+
         /** Attach shaders and link program */
         for (auto shader : m_shaders) {
             glAttachShader(m_program, shader);
@@ -64,9 +85,6 @@ namespace Rendering {
             glDeleteShader(shader);
         }
 
-        return *this;
-    }
-    void Shader::Use() const {
-        glUseProgram(m_program);
+        return unbind();
     }
 }
