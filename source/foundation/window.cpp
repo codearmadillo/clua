@@ -43,23 +43,7 @@ void Window::start() {
 
 
 
-    // Rendering test
-    std::vector<Rendering::Element> elements = {
-            Rendering::Element(0), Rendering::Element(1), Rendering::Element(3),
-            Rendering::Element(1), Rendering::Element(2), Rendering::Element(3)
-    };
-    std::vector<Rendering::Vertex> vertices = {
-            Rendering::Vertex({ 0.5f, 0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f }),
-            Rendering::Vertex({ 0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }),
-            Rendering::Vertex({ -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f }),
-            Rendering::Vertex({ -0.5f, 0.5f, 0.0f }, { 1.0f, 1.0f, 0.0f, 1.0f }),
-    };
 
-    Rendering::ObjectBuffer objectBuffer;
-    objectBuffer
-            .addVertexBufferObject(vertices)
-            .addElementBufferObject(elements)
-            .compile();
 
 
 
@@ -88,13 +72,6 @@ void Window::start() {
 
         // Application update loop
         Runtime::getInstance().onWindowUpdate();
-
-
-
-        // Try to draw
-        objectBuffer.draw();
-
-
 
         glfwSwapBuffers(m_window);
     }
