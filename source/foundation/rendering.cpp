@@ -41,6 +41,6 @@ namespace Rendering {
                 .bind();
     }
     void Module::setBindings() {
-        std::cout << "set bindings\n";
+
     }
 }
