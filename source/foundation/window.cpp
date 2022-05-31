@@ -5,6 +5,9 @@
 #include "foundation/lua.h"
 #include "foundation/keyboard.h"
 #include "foundation/rendering.h"
+#include "rendering/element.h"
+#include "rendering/vertex.h"
+#include "rendering/object-buffer.h"
 
 Window::Window(): m_deltaTime(0.0), m_lastFrameTime(0.0) {
     if (!glfwInit())
@@ -36,6 +39,30 @@ void Window::start() {
     // Initialize module
     Rendering::Module::getInstance().onBeforeWindowStart();
 
+
+
+
+
+    // Rendering test
+    std::vector<Rendering::Element> elements = {
+            Rendering::Element(0), Rendering::Element(1), Rendering::Element(3),
+            Rendering::Element(1), Rendering::Element(2), Rendering::Element(3)
+    };
+    std::vector<Rendering::Vertex> vertices = {
+            Rendering::Vertex({ 0.5f, 0.5f, 0.0f }),
+            Rendering::Vertex({ 0.5f, -0.5f, 0.0f }),
+            Rendering::Vertex({ -0.5f, -0.5f, 0.0f }),
+            Rendering::Vertex({ -0.5f, 0.5f, 0.0f }),
+    };
+
+    Rendering::ObjectBuffer objectBuffer;
+    objectBuffer
+            .addVertexBufferObject(vertices)
+            .addElementBufferObject(elements)
+            .compile();
+
+
+
     // GL pre-configuration
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
@@ -61,6 +88,13 @@ void Window::start() {
 
         // Application update loop
         Runtime::getInstance().onWindowUpdate();
+
+
+
+        // Try to draw
+        objectBuffer.draw();
+
+
 
         glfwSwapBuffers(m_window);
     }

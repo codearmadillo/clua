@@ -3,7 +3,7 @@
 #include "foundation/rendering.h"
 
 #include "GL/glew.h"
-#include "GLFW/glfw3.h"
+#include "rendering/vertex.h"
 
 namespace Rendering {
     void Module::onBeforeWindowStart() {

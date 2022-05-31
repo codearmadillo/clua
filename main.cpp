@@ -6,7 +6,13 @@
 #include "foundation/keyboard.h"
 #include "foundation/rendering.h"
 
-#include "utils/file.h"
+#include "rendering/element.h"
+#include "rendering/vertex.h"
+#include "rendering/object-buffer.h"
+
+class ObjectBuffer {
+
+};
 
 int main() {
 
