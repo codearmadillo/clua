@@ -46,26 +46,28 @@ void Lua::dump(lua_State *lua) {
     std::cout << "------------------ Lua dump finished -------------------\n\n\n";
 }
 Lua& Lua::get(const char* name) {
-
-    const int stack_offset = lua_gettop(m_state);
-    const auto name_exploded = utils::string_explode(name, '.');
-
     lua_getglobal(m_state, m_libName);
-
     if (lua_isnoneornil(m_state, -1) || !lua_istable(m_state, -1)) {
         lua_pop(m_state, 1);
         throw std::runtime_error("Failed to get global 'clua' API - This happens when the API isn't initialized correctly.");
     }
 
+    Lua::get(name, m_state);
+
+    return *this;
+}
+void Lua::get(const char* name, lua_State* lua) {
+    // Subtract one - Do not count base layer
+    const int stack_offset = lua_gettop(lua) - 1;
+    const auto name_exploded = utils::string_explode(name, '.');
+
     // get nested members
-    bool scope_found = true;
     int local_stack_offset = 0;
     for (auto i = name_exploded.begin(); i != name_exploded.end() - 1; i++) {
         auto field_name = *i;
-        auto field = lua_getfield(m_state, stack_offset + local_stack_offset + 1, field_name.c_str());
+        auto field = lua_getfield(lua, stack_offset + local_stack_offset + 1, field_name.c_str());
 
-        if (lua_isnoneornil(m_state, stack_offset + local_stack_offset + 2) || !lua_istable(m_state, stack_offset + local_stack_offset + 2)) {
-            scope_found = false;
+        if (lua_isnoneornil(lua, stack_offset + local_stack_offset + 2) || !lua_istable(lua, stack_offset + local_stack_offset + 2)) {
             break;
         }
 
@@ -73,20 +75,15 @@ Lua& Lua::get(const char* name) {
     }
 
     // get actual field
-    auto field = lua_getfield(m_state, stack_offset + local_stack_offset + 1, name_exploded[name_exploded.size() - 1].c_str());
+    auto field = lua_getfield(lua, stack_offset + local_stack_offset + 1, name_exploded[name_exploded.size() - 1].c_str());
 
     // Rotate value down the stack
     lua_insert(
-        m_state, lua_gettop(m_state) - local_stack_offset - 1
+            lua, lua_gettop(lua) - local_stack_offset - 1
     );
 
     // And cleanup stack
-    lua_pop(m_state, local_stack_offset + 1);
-
-    return *this;
-}
-void Lua::get(const char* name, lua_State* lua) {
-
+    lua_pop(lua, local_stack_offset + 1);
 }
 Lua& Lua::bind(const char* name) {
 
