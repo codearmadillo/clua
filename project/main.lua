@@ -1,5 +1,13 @@
+local states = {};
+local player;
+local ctrl;
+
+local menu;
+
 function clua.start()
+    -- Setup window
     clua.window.setTitle('New game')
-    -- This will not work - recalculation is not done
-    -- clua.window.setSize(1920, 1080)
+
+    menu = clua.create.state()
+    print(menu)
 end

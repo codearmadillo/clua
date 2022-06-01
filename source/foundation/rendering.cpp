@@ -66,4 +66,15 @@ namespace Rendering {
 
 
    objectBuffer.draw();
+
+
+   Objects
+   - It is possible to create independent objects
+   SceneManagement
+   - Creating object allows the developer to attach it to scene
+   - When doing so, the scene will take care of
+    - Rendering
+    - Running hook (start/update)
+    - Cleaning up
+
 */

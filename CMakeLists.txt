@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 20)
 #######################################################
 ### Add executable files
 #######################################################
-add_executable(${CMAKE_PROJECT_NAME} main.cpp include/foundation/lua.h source/foundation/lua.cpp include/utils/string.h include/foundation/window.h source/foundation/window.cpp include/foundation/runtime.h source/foundation/runtime.cpp include/utils/file.h include/foundation/keyboard.h source/foundation/keyboard.cpp include/foundation/rendering.h source/foundation/rendering.cpp include/rendering/shader.h source/rendering/shader.cpp include/rendering/vertex.h include/rendering/element.h include/rendering/object-buffer.h source/rendering/object-buffer.cpp)
+add_executable(${CMAKE_PROJECT_NAME} main.cpp include/foundation/lua.h source/foundation/lua.cpp include/utils/string.h include/foundation/window.h source/foundation/window.cpp include/foundation/runtime.h source/foundation/runtime.cpp include/utils/file.h include/foundation/keyboard.h source/foundation/keyboard.cpp include/foundation/rendering.h source/foundation/rendering.cpp include/rendering/shader.h source/rendering/shader.cpp include/rendering/vertex.h include/rendering/element.h include/rendering/object-buffer.h source/rendering/object-buffer.cpp include/runtime/game-object.h include/runtime/game-object-container.h include/runtime/game-object-handler.h include/runtime/game-state.h include/runtime/game-state-handler.h source/runtime/game-object-handler.cpp source/runtime/game-state-handler.cpp include/runtime/game-state-container.h source/runtime/game-state-container.cpp source/runtime/game-state.cpp include/utils/log.h)
 
 #######################################################
 ### Add subdirectories

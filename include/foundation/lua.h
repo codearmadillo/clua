@@ -7,6 +7,12 @@ extern "C" {
     #include <lauxlib.h>
 }
 
+enum LuaAssertArguments {
+    LUA_ARGS_EXACT = 0,
+    LUA_ARGS_AT_LEAST = 1,
+    LUA_ARGS_AT_MOST = 2
+};
+
 class Lua {
     public:
         static Lua& getInstance() {
@@ -17,12 +23,20 @@ class Lua {
         void operator=(Lua const&)  = delete;
 
         Lua& dump();
+        static void dump(lua_State* lua);
         /**
          * Binds nested member to Lua state
          * @param name
          * @return
          */
         Lua& bind(const char* name);
+        /**
+         * Binds value on top of the stack, to table which sits below the value on top of that stack. The bound value
+         * is cleared and target table becomes the top of the stack
+         * @param name
+         * @param lua
+         */
+        static void bind(const char* name, lua_State* lua);
         /**
          * Obtains nested member and pushes it on top of stack if it exists, otherwise pushes nil on top of stack
          * @param name
@@ -51,7 +65,18 @@ class Lua {
         Lua& push(const char* n);
         Lua& push(const bool& n);
         Lua& push(int (*c)(lua_State*));
-        void static assertArguments(lua_State* lua, int n);
+
+        /** Static Push methods */
+        static void push(lua_State* lua);
+        static void pushvalue(const int& index, lua_State* lua);
+        static void push(const double& n, lua_State* lua);
+        static void push(const float& n, lua_State* lua);
+        static void push(const int& n, lua_State* lua);
+        static void push(const char* n, lua_State* lua);
+        static void push(const bool& n, lua_State* lua);
+        static void push(int (*c)(lua_State*), lua_State* lua);
+
+        void static assertArguments(lua_State* lua, int n, LuaAssertArguments mode);
     private:
         Lua();
         ~Lua();

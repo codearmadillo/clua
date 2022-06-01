@@ -132,7 +132,7 @@ Window &Window::setBindings() {
     Lua::getInstance()
         // Window Width
         .push([](lua_State* lua){
-            Lua::assertArguments(lua, 1);
+            Lua::assertArguments(lua, 1, LUA_ARGS_EXACT);
 
             auto width = luaL_checknumber(lua, 1);
             Window::getInstance().setWindowWidth(static_cast<int>(width));
@@ -142,7 +142,7 @@ Window &Window::setBindings() {
         .bind("window.setWidth")
         // Window Height
         .push([](lua_State* lua){
-            Lua::assertArguments(lua, 1);
+            Lua::assertArguments(lua, 1, LUA_ARGS_EXACT);
 
             auto height = luaL_checknumber(lua, 1);
             Window::getInstance().setWindowHeight(static_cast<int>(height));
@@ -152,7 +152,7 @@ Window &Window::setBindings() {
         .bind("window.setHeight")
         // Window size
         .push([](lua_State* lua){
-            Lua::assertArguments(lua, 2);
+            Lua::assertArguments(lua, 2, LUA_ARGS_EXACT);
 
             auto width = luaL_checknumber(lua, 1);
             auto height = luaL_checknumber(lua, 2);
@@ -164,7 +164,7 @@ Window &Window::setBindings() {
         .bind("window.setSize")
         // Window title
         .push([](lua_State* lua){
-            Lua::assertArguments(lua, 1);
+            Lua::assertArguments(lua, 1, LUA_ARGS_EXACT);
 
             auto title = luaL_checkstring(lua, 1);
             Window::getInstance().setWindowTitle(title);

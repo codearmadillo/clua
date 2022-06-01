@@ -13,34 +13,37 @@ Lua::~Lua() {
     lua_close(m_state);
 }
 Lua& Lua::dump() {
-    int top = lua_gettop(m_state);
+    Lua::dump(m_state);
+    return *this;
+}
+void Lua::dump(lua_State *lua) {
+    int top = lua_gettop(lua);
     std::cout << "------------------- Starting Lua stack dump -------------------\n";
     if (top == 0) {
         std::cout << "Stack is empty\n";
-        return *this;
+        return;
     }
     for (int i = 1; i <= top; i++) {
-        printf("%d\t%s\t", i, luaL_typename(m_state,i));
-        switch (lua_type(m_state, i)) {
+        printf("%d\t%s\t", i, luaL_typename(lua,i));
+        switch (lua_type(lua, i)) {
             case LUA_TNUMBER:
-                printf("%g\n",lua_tonumber(m_state,i));
+                printf("%g\n",lua_tonumber(lua,i));
                 break;
             case LUA_TSTRING:
-                printf("%s\n",lua_tostring(m_state,i));
+                printf("%s\n",lua_tostring(lua,i));
                 break;
             case LUA_TBOOLEAN:
-                printf("%s\n", (lua_toboolean(m_state, i) ? "true" : "false"));
+                printf("%s\n", (lua_toboolean(lua, i) ? "true" : "false"));
                 break;
             case LUA_TNIL:
                 printf("%s\n", "nil");
                 break;
             default:
-                printf("%p\n",lua_topointer(m_state,i));
+                printf("%p\n",lua_topointer(lua,i));
                 break;
         }
     }
     std::cout << "------------------ Lua dump finished -------------------\n\n\n";
-    return *this;
 }
 Lua& Lua::get(const char* name) {
 
@@ -166,6 +169,8 @@ Lua& Lua::bind(const char* name) {
      */
 
     return *this;
+}
+void Lua::bind(const char* name, lua_State* lua) {
 
 }
 Lua& Lua::call(const char* script, int nargs, int nresults) {
@@ -230,43 +235,75 @@ Lua& Lua::pcall(int nargs, int nresults) {
     return *this;
 }
 
+void Lua::push(lua_State* lua) {
+    lua_pushnil(lua);
+}
+
+void Lua::pushvalue(const int &index, lua_State* lua) {
+    lua_pushvalue(lua, index);
+}
+
+void Lua::push(const float &n, lua_State* lua) {
+    lua_pushnumber(lua, n);
+}
+
+void Lua::push(const int &n, lua_State* lua) {
+    lua_pushinteger(lua, n);
+}
+
+void Lua::push(const char *n, lua_State* lua) {
+    lua_pushstring(lua, n);
+}
+
+void Lua::push(const bool &n, lua_State* lua) {
+    lua_pushboolean(lua, n);
+}
+
+void Lua::push(int (*c)(lua_State *), lua_State* lua) {
+    lua_pushcfunction(lua, c);
+}
+
+void Lua::push(const double &n, lua_State* lua) {
+    lua_pushnumber(lua, n);
+}
+
 Lua& Lua::push() {
-    lua_pushnil(m_state);
+    Lua::push(m_state);
     return *this;
 }
 
 Lua& Lua::pushvalue(const int &index) {
-    lua_pushvalue(m_state, index);
+    Lua::pushvalue(index, m_state);
     return *this;
 }
 
 Lua& Lua::push(const float &n) {
-    lua_pushnumber(m_state, n);
+    Lua::push(n, m_state);
     return *this;
 }
 
 Lua& Lua::push(const int &n) {
-    lua_pushinteger(m_state, n);
+    Lua::push(n, m_state);
     return *this;
 }
 
 Lua& Lua::push(const char *n) {
-    lua_pushstring(m_state, n);
+    Lua::push(n, m_state);
     return *this;
 }
 
 Lua& Lua::push(const bool &n) {
-    lua_pushboolean(m_state, n);
+    Lua::push(n, m_state);
     return *this;
 }
 
 Lua& Lua::push(int (*c)(lua_State *)) {
-    lua_pushcfunction(m_state, c);
+    Lua::push(c, m_state);
     return *this;
 }
 
 Lua &Lua::push(const double &n) {
-    lua_pushnumber(m_state, n);
+    Lua::push(n, m_state);
     return *this;
 }
 
@@ -280,10 +317,24 @@ bool Lua::load_file(const char *path, const char* mode) {
     return true;
 }
 
-void Lua::assertArguments(lua_State* lua, int n)
+void Lua::assertArguments(lua_State* lua, int n, LuaAssertArguments mode)
 {
-    int count = lua_gettop(lua);
-    if (count != n) {
-        std::string err("Expected " + std::to_string(n) + " arguments but received " + std::to_string(count) + " instead\n");
+    int args = lua_gettop(lua);
+    switch(mode) {
+        case LUA_ARGS_AT_LEAST:
+            if (args < n) {
+                std::string err("Expected at least" + std::to_string(n) + " arguments but received " + std::to_string(args) + " instead\n");
+            }
+            break;
+        case LUA_ARGS_AT_MOST:
+            if (args > n) {
+                std::string err("Expected at most" + std::to_string(n) + " arguments but received " + std::to_string(args) + " instead\n");
+            }
+            break;
+        case LUA_ARGS_EXACT:
+            if (args != n) {
+                std::string err("Expected exactly" + std::to_string(n) + " arguments but received " + std::to_string(args) + " instead\n");
+            }
+            break;
     }
 }
