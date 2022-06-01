@@ -50,7 +50,9 @@ class Lua {
          */
         static void get(const char* name, lua_State* lua);
         Lua& call(const char* script, int nargs = 0, int nresults = 0);
+        static void call(const char* script, lua_State* lua, int nargs = 0, int nresults = 0);
         Lua& pcall(const char* script, int nargs = 0, int nresults = 0);
+        static void pcall(const char* script, lua_State* lua, int nargs = 0, int nresults = 0);
         /**
          * Calls a method currently sitting on top of stack
          * @param nargs
@@ -58,6 +60,8 @@ class Lua {
          * @return
          */
         Lua& pcall(int nargs = 0, int nresults = 0);
+        static void pcall(lua_State* lua, int nargs = 0, int nresults = 0);
+
         bool load_file(const char* path, const char* mode = "bt");
         Lua& load_string(const char* script);
         lua_State* rawState() { return m_state; }

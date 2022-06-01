@@ -173,144 +173,147 @@ Lua& Lua::bind(const char* name) {
 void Lua::bind(const char* name, lua_State* lua) {
 
 }
-Lua& Lua::call(const char* script, int nargs, int nresults) {
-    (void) luaL_loadstring(m_state, script);
-    lua_insert(m_state, -nargs - 1);
-    (void)lua_call(m_state, nargs, nresults);
-    return *this;
-}
+
 Lua& Lua::load_string(const char* script) {
     (void) luaL_loadstring(m_state, script);
     lua_pop(m_state, 1);
     return *this;
 }
-Lua& Lua::pcall(const char *script, int nargs, int nresults) {
-    (void) luaL_loadstring(m_state, script);
-    lua_insert(m_state, -nargs - 1);
-    const int result = lua_pcall(m_state, nargs, nresults, -2);
-    switch(result) {
-        case LUA_OK:
-            break;
-        case LUA_ERRRUN:
-            std::cerr << "Calling a script with runtime error produced an error string: " << lua_tostring(m_state, -1) << std::endl;
-            lua_pop(m_state, 1);
-            break;
-        case LUA_ERRMEM:
-            std::cerr << "Memory allocation error occurred" << std::endl;
-            lua_pop(m_state, 1);
-            break;
-        case LUA_ERRERR:
-            std::cerr << "Error occurred while running custom error delegate" << std::endl;
-            lua_pop(m_state, 1);
-            break;
-        default:
-            std::cerr << "Undefined error occurred" << std::endl;
-            lua_pop(m_state, 1);
-            break;
-    }
+Lua& Lua::call(const char* script, int nargs, int nresults) {
+    Lua::call(script, m_state, nargs, nresults);
     return *this;
 }
-Lua& Lua::pcall(int nargs, int nresults) {
-    const int result = lua_pcall(m_state, nargs, nresults, -2);
+void Lua::call(const char* script, lua_State* lua, int nargs, int nresults) {
+    (void) luaL_loadstring(lua, script);
+    lua_insert(lua, -nargs - 1);
+    (void)lua_call(lua, nargs, nresults);
+}
+
+Lua& Lua::pcall(const char *script, int nargs, int nresults) {
+    Lua::pcall(script, m_state, nargs, nresults);
+    return *this;
+}
+void Lua::pcall(const char* script, lua_State* lua, int nargs, int nresults) {
+    (void) luaL_loadstring(lua, script);
+    lua_insert(lua, -nargs - 1);
+    const int result = lua_pcall(lua, nargs, nresults, -2);
     switch(result) {
         case LUA_OK:
             break;
         case LUA_ERRRUN:
-            std::cerr << "Calling a script with runtime error produced an error string: " << lua_tostring(m_state, -1) << std::endl;
-            lua_pop(m_state, 1);
+            std::cerr << "Calling a script with runtime error produced an error string: " << lua_tostring(lua, -1) << std::endl;
+            lua_pop(lua, 1);
             break;
         case LUA_ERRMEM:
             std::cerr << "Memory allocation error occurred" << std::endl;
-            lua_pop(m_state, 1);
+            lua_pop(lua, 1);
             break;
         case LUA_ERRERR:
             std::cerr << "Error occurred while running custom error delegate" << std::endl;
-            lua_pop(m_state, 1);
+            lua_pop(lua, 1);
             break;
         default:
             std::cerr << "Undefined error occurred" << std::endl;
-            lua_pop(m_state, 1);
+            lua_pop(lua, 1);
             break;
     }
+}
+
+Lua& Lua::pcall(int nargs, int nresults) {
+    Lua::pcall(m_state, nargs, nresults);
     return *this;
+}
+void Lua::pcall(lua_State* lua, int nargs, int nresults) {
+    const int result = lua_pcall(lua, nargs, nresults, -2);
+    switch(result) {
+        case LUA_OK:
+            break;
+        case LUA_ERRRUN:
+            std::cerr << "Calling a script with runtime error produced an error string: " << lua_tostring(lua, -1) << std::endl;
+            lua_pop(lua, 1);
+            break;
+        case LUA_ERRMEM:
+            std::cerr << "Memory allocation error occurred" << std::endl;
+            lua_pop(lua, 1);
+            break;
+        case LUA_ERRERR:
+            std::cerr << "Error occurred while running custom error delegate" << std::endl;
+            lua_pop(lua, 1);
+            break;
+        default:
+            std::cerr << "Undefined error occurred" << std::endl;
+            lua_pop(lua, 1);
+            break;
+    }
 }
 
 void Lua::push(lua_State* lua) {
     lua_pushnil(lua);
 }
-
-void Lua::pushvalue(const int &index, lua_State* lua) {
-    lua_pushvalue(lua, index);
-}
-
-void Lua::pushtable(lua_State* lua) {
-    lua_newtable(lua);
-}
-
-void Lua::push(const float &n, lua_State* lua) {
-    lua_pushnumber(lua, n);
-}
-
-void Lua::push(const int &n, lua_State* lua) {
-    lua_pushinteger(lua, n);
-}
-
-void Lua::push(const char *n, lua_State* lua) {
-    lua_pushstring(lua, n);
-}
-
-void Lua::push(const bool &n, lua_State* lua) {
-    lua_pushboolean(lua, n);
-}
-
-void Lua::push(int (*c)(lua_State *), lua_State* lua) {
-    lua_pushcfunction(lua, c);
-}
-
-void Lua::push(const double &n, lua_State* lua) {
-    lua_pushnumber(lua, n);
-}
-
 Lua& Lua::push() {
     Lua::push(m_state);
     return *this;
 }
 
-Lua& Lua::pushtable() {
-    Lua::pushtable(m_state);
-    return *this;
+void Lua::pushvalue(const int &index, lua_State* lua) {
+    lua_pushvalue(lua, index);
 }
-
 Lua& Lua::pushvalue(const int &index) {
     Lua::pushvalue(index, m_state);
     return *this;
 }
 
+void Lua::pushtable(lua_State* lua) {
+    lua_newtable(lua);
+}
+Lua& Lua::pushtable() {
+    Lua::pushtable(m_state);
+    return *this;
+}
+
+void Lua::push(const float &n, lua_State* lua) {
+    lua_pushnumber(lua, n);
+}
 Lua& Lua::push(const float &n) {
     Lua::push(n, m_state);
     return *this;
 }
 
+void Lua::push(const int &n, lua_State* lua) {
+    lua_pushinteger(lua, n);
+}
 Lua& Lua::push(const int &n) {
     Lua::push(n, m_state);
     return *this;
 }
 
+void Lua::push(const char *n, lua_State* lua) {
+    lua_pushstring(lua, n);
+}
 Lua& Lua::push(const char *n) {
     Lua::push(n, m_state);
     return *this;
 }
 
+void Lua::push(const bool &n, lua_State* lua) {
+    lua_pushboolean(lua, n);
+}
 Lua& Lua::push(const bool &n) {
     Lua::push(n, m_state);
     return *this;
 }
 
+void Lua::push(int (*c)(lua_State *), lua_State* lua) {
+    lua_pushcfunction(lua, c);
+}
 Lua& Lua::push(int (*c)(lua_State *)) {
     Lua::push(c, m_state);
     return *this;
 }
 
+void Lua::push(const double &n, lua_State* lua) {
+    lua_pushnumber(lua, n);
+}
 Lua &Lua::push(const double &n) {
     Lua::push(n, m_state);
     return *this;
