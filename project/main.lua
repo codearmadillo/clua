@@ -1,13 +1,12 @@
-local states = {};
-local player;
-local ctrl;
+require "state-menu"
 
-local menu;
+local states = {};
 
 function clua.start()
     -- Setup window
     clua.window.setTitle('New game')
-
-    menu = clua.create.state()
-    print(menu)
+    -- Create states
+    states.menu = createMenuState()
+    -- Set menu as default state
+    states.menu.setAsDefault()
 end

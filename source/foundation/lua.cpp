@@ -85,6 +85,9 @@ Lua& Lua::get(const char* name) {
 
     return *this;
 }
+void Lua::get(const char* name, lua_State* lua) {
+
+}
 Lua& Lua::bind(const char* name) {
 
     // this is also where the value that will be added to stack lives
@@ -243,6 +246,10 @@ void Lua::pushvalue(const int &index, lua_State* lua) {
     lua_pushvalue(lua, index);
 }
 
+void Lua::pushtable(lua_State* lua) {
+    lua_newtable(lua);
+}
+
 void Lua::push(const float &n, lua_State* lua) {
     lua_pushnumber(lua, n);
 }
@@ -269,6 +276,11 @@ void Lua::push(const double &n, lua_State* lua) {
 
 Lua& Lua::push() {
     Lua::push(m_state);
+    return *this;
+}
+
+Lua& Lua::pushtable() {
+    Lua::pushtable(m_state);
     return *this;
 }
 

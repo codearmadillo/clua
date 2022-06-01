@@ -39,14 +39,6 @@ void Window::start() {
     // Initialize module
     Rendering::Module::getInstance().onBeforeWindowStart();
 
-
-
-
-
-
-
-
-
     // GL pre-configuration
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
@@ -71,7 +63,7 @@ void Window::start() {
         m_lastFrameTime = currentFrameTime;
 
         // Application update loop
-        Runtime::getInstance().onWindowUpdate();
+        Runtime::getInstance().onWindowFrame();
 
         glfwSwapBuffers(m_window);
     }
@@ -123,6 +115,7 @@ double Window::getDeltaTime() const {
 }
 
 void Window::terminate() {
+    Runtime::getInstance().onAfterWindowClose();
     if (m_window)
         glfwDestroyWindow(m_window);
     glfwTerminate();

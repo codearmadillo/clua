@@ -8,6 +8,8 @@
     #define DEBUG !NDEBUG
 #endif
 
+#include "utils/log.h"
+
 #include <iostream>
 
 #include "foundation/lua.h"

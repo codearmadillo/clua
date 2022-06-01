@@ -43,6 +43,12 @@ class Lua {
          * @return Status flag indicating whether or not was member pushed
          */
         Lua& get(const char* name);
+        /**
+         * Obtains nested member from table on top of the stack, and pushes it on top if it exists
+         * @param name
+         * @param lua
+         */
+        static void get(const char* name, lua_State* lua);
         Lua& call(const char* script, int nargs = 0, int nresults = 0);
         Lua& pcall(const char* script, int nargs = 0, int nresults = 0);
         /**
@@ -58,6 +64,7 @@ class Lua {
 
         /** Push methods */
         Lua& push();
+        Lua& pushtable();
         Lua& pushvalue(const int& index);
         Lua& push(const double& n);
         Lua& push(const float& n);
@@ -68,6 +75,7 @@ class Lua {
 
         /** Static Push methods */
         static void push(lua_State* lua);
+        static void pushtable(lua_State* lua);
         static void pushvalue(const int& index, lua_State* lua);
         static void push(const double& n, lua_State* lua);
         static void push(const float& n, lua_State* lua);

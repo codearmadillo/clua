@@ -7,7 +7,8 @@ class Runtime {
             return instance;
         }
         void onBeforeWindowStart();
-        void onWindowUpdate();
+        void onAfterWindowClose();
+        void onWindowFrame();
         Runtime(Runtime const&)         = delete;
         void operator=(Runtime const&)  = delete;
         void setBindings();

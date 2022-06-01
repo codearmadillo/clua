@@ -11,5 +11,5 @@ GameState::~GameState() {
     LOG_INFO("deleting state with id " << std::to_string(m_id));
 }
 void GameState::createLuaTableAndPushToState(lua_State *lua) {
-    Lua::push(1, lua);
+    Lua::pushtable(lua);
 }
