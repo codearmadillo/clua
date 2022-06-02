@@ -5,49 +5,45 @@
 #include "utils/log.h"
 
 void Runtime::onBeforeWindowStart() {
-    Lua::getInstance()
-        .get("start")
-        .pcall(0, 0);
+    Lua::get("clua.start");
+    Lua::pcall(0, 0);
 }
 void Runtime::onAfterWindowClose() {
-    Lua::getInstance()
-            .get("destroy")
-            .pcall(0, 0);
+    Lua::get("clua.destroy");
+    Lua::pcall(0, 0);
 }
 void Runtime::onWindowFrame() {
-    Lua::getInstance()
-        .get("update")
-        .push(Window::getInstance().getDeltaTime())
-        .pcall(1, 0);
-    Lua::getInstance()
-        .get("draw")
-        .pcall(0, 0);
+    Lua::get("clua.update");
+    Lua::push(Window::getInstance().getDeltaTime());
+    Lua::pcall(1, 0);
+
+    Lua::get("clua.draw");
+    Lua::pcall(0, 0);
 }
 void Runtime::setBindings() {
-    Lua::getInstance()
-        // Default Start and Update functions
-        .push([](lua_State* lua){
-            LOG_INFO("Starting application\n");
-            return 0;
-        })
-        .bind("start")
 
-        .push([](lua_State* lua){
-            double dt = luaL_checknumber(lua, 1);
-            return 0;
-        })
-        .bind("update")
+    Lua::push([](lua_State* lua){
+        LOG_INFO("Starting application\n");
+        return 0;
+    });
+    Lua::bind("clua.start");
 
-        .push([](lua_State* lua){
-            return 0;
-        })
-        .bind("draw")
+    Lua::push([](lua_State* lua){
+        double dt = luaL_checknumber(lua, 1);
+        return 0;
+    });
+    Lua::bind("clua.update");
 
-        .push([](lua_State* lua){
-            LOG_INFO("Destroying application\n");
-            return 0;
-        })
-        .bind("destroy");
+    Lua::push([](lua_State* lua){
+        return 0;
+    });
+    Lua::bind("clua.draw");
+
+    Lua::push([](lua_State* lua){
+        LOG_INFO("Destroying application\n");
+        return 0;
+    });
+    Lua::bind("clua.destroy");
 }
 Runtime::Runtime() {
 }
@@ -55,8 +51,7 @@ Runtime::~Runtime() {
 }
 
 void Runtime::loadScripts() {
-    auto loaded = Lua::getInstance().load_file("main.lua");
-    if(loaded) {
-        Lua::getInstance().pcall(0, 0);
+    if (Lua::load_file("main.lua")) {
+        Lua::pcall(0, 0);
     }
 }

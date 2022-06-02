@@ -27,11 +27,18 @@ Lua::Lua(): m_state(luaL_newstate()) {
 Lua::~Lua() {
     lua_close(m_state);
 }
-Lua& Lua::dump() {
-    Lua::dump(m_state);
-    return *this;
+
+lua_State* Lua::getApplicationState() {
+    return m_state;
 }
-void Lua::dump(lua_State *lua) {
+
+const char* Lua::getLibraryName() const {
+    return m_libName;
+}
+
+
+void Lua::dump(lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
     int top = lua_gettop(lua);
     std::cout << "------------------- Starting Lua stack dump -------------------\n";
     if (top == 0) {
@@ -60,21 +67,184 @@ void Lua::dump(lua_State *lua) {
     }
     std::cout << "------------------ Lua dump finished -------------------\n\n\n";
 }
-Lua& Lua::get(const char* name) {
-    lua_getglobal(m_state, m_libName);
-    if (lua_isnoneornil(m_state, -1) || !lua_istable(m_state, -1)) {
-        lua_pop(m_state, 1);
-        LOG_ERROR("Failed to get global 'clua' API - This happens when the API isn't initialized correctly.");
+
+void Lua::call(const char* script, int nargs, int nresults, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    (void) luaL_loadstring(lua, script);
+    lua_insert(lua, -nargs - 1);
+    (void)lua_call(lua, nargs, nresults);
+}
+void Lua::pcall(const char* script, int nargs, int nresults, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    (void) luaL_loadstring(lua, script);
+    lua_insert(lua, -nargs - 1);
+    const int result = lua_pcall(lua, nargs, nresults, -2);
+    switch(result) {
+        case LUA_OK:
+            break;
+        case LUA_ERRRUN:
+            std::cerr << "Calling a script with runtime error produced an error string: " << lua_tostring(lua, -1) << std::endl;
+            lua_pop(lua, 1);
+            break;
+        case LUA_ERRMEM:
+            std::cerr << "Memory allocation error occurred" << std::endl;
+            lua_pop(lua, 1);
+            break;
+        case LUA_ERRERR:
+            std::cerr << "Error occurred while running custom error delegate" << std::endl;
+            lua_pop(lua, 1);
+            break;
+        default:
+            std::cerr << "Undefined error occurred" << std::endl;
+            lua_pop(lua, 1);
+            break;
+    }
+}
+void Lua::pcall(int nargs, int nresults, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    auto top = lua_gettop(lua);
+    if (top == 0 || !lua_iscfunction(lua, -1)) {
+        return;
+    }
+    const int result = lua_pcall(lua, nargs, nresults, -2);
+    switch(result) {
+        case LUA_OK:
+            break;
+        case LUA_ERRRUN:
+            std::cerr << "Calling a script with runtime error produced an error string: " << lua_tostring(lua, -1) << std::endl;
+            lua_pop(lua, 1);
+            break;
+        case LUA_ERRMEM:
+            std::cerr << "Memory allocation error occurred" << std::endl;
+            lua_pop(lua, 1);
+            break;
+        case LUA_ERRERR:
+            std::cerr << "Error occurred while running custom error delegate" << std::endl;
+            lua_pop(lua, 1);
+            break;
+        default:
+            std::cerr << "Undefined error occurred" << std::endl;
+            lua_pop(lua, 1);
+            break;
+    }
+}
+void Lua::pcall(lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    Lua::pcall(0, 0, lua);
+}
+
+bool Lua::load_file(const char* path, const char* mode, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    auto status = luaL_loadfilex(lua, path, mode);
+    if (status != LUA_OK) {
+        std::cerr << lua_tostring(lua, -1) << "\n";
+        lua_pop(lua, 1);
+        return false;
+    }
+    return true;
+}
+void Lua::load_string(const char* string, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    (void) luaL_loadstring(lua, string);
+}
+
+void Lua::pushnil(lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_pushnil(lua);
+}
+void Lua::pushtable(lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_newtable(lua);
+}
+void Lua::pushvalue(const int& index, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_pushvalue(lua, index);
+}
+void Lua::push(const double& n, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_pushnumber(lua, n);
+}
+void Lua::push(const float& n, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_pushnumber(lua, n);
+}
+void Lua::push(const int& n, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_pushinteger(lua, n);
+}
+void Lua::push(const char* n, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_pushstring(lua, n);
+}
+void Lua::push(const bool& n, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_pushboolean(lua, n);
+}
+void Lua::push(int (*c)(lua_State*), lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_pushcfunction(lua, c);
+}
+
+void Lua::assertArgs(int arguments, LuaAssertArguments mode, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+
+    int args = lua_gettop(lua);
+    switch(mode) {
+        case LUA_ARGS_AT_LEAST:
+            if (args < arguments) {
+                std::string err("Expected at least" + std::to_string(arguments) + " arguments but received " + std::to_string(args) + " instead\n");
+            }
+            break;
+        case LUA_ARGS_AT_MOST:
+            if (args > arguments) {
+                std::string err("Expected at most" + std::to_string(arguments) + " arguments but received " + std::to_string(args) + " instead\n");
+            }
+            break;
+        case LUA_ARGS_EXACT:
+            if (args != arguments) {
+                std::string err("Expected exactly" + std::to_string(arguments) + " arguments but received " + std::to_string(args) + " instead\n");
+            }
+            break;
+    }
+}
+
+void Lua::ensureStackContext(const char *name, lua_State* lua) {
+    const auto lib_name = Lua::getInstance().getLibraryName();
+    const auto name_exploded = utils::string_explode(name, '.');
+    const bool push_to_library = std::string(lib_name) == std::string(name_exploded[0]);
+
+    if (push_to_library) {
+        lua_getglobal(lua, lib_name);
+
+        if (lua_isnoneornil(lua, -1)) {
+            lua_pop(lua, 1);
+
+            lua_newtable(lua);
+            lua_setglobal(lua, lib_name);
+
+            lua_getglobal(lua, lib_name);
+        } else {
+            if (!lua_istable(lua, -1))
+                LOG_ERROR("Expected '" << lib_name << "' to be a table (received '" << luaL_typename(lua, -1) << "')");
+        }
+    } else {
+        if (lua_isnoneornil(lua, -1) || !lua_istable(lua, -1)) {
+            LOG_ERROR("Failed to ensure correct stack context - the top of the stack needs to be a table");
+        }
+    }
+}
+
+
+void Lua::get(const char* name, lua_State* luaState) {
+
+    const auto name_exploded = utils::string_explode(name, '.');
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+
+    if (std::string(name_exploded[0]) == std::string(Lua::getInstance().getLibraryName())) {
+        lua_getglobal(lua, Lua::getInstance().getLibraryName());
     }
 
-    Lua::get(name, m_state);
-
-    return *this;
-}
-void Lua::get(const char* name, lua_State* lua) {
-    // Subtract one - Do not count base layer
     const int stack_offset = lua_gettop(lua) - 1;
-    const auto name_exploded = utils::string_explode(name, '.');
 
     // get nested members
     int local_stack_offset = 0;
@@ -100,56 +270,57 @@ void Lua::get(const char* name, lua_State* lua) {
     // And cleanup stack
     lua_pop(lua, local_stack_offset + 1);
 }
-Lua& Lua::bind(const char* name) {
+void Lua::bind(const char* name, lua_State* luaState) {
+
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    // Subtract one - Do not count base layer
+    const auto name_exploded = utils::string_explode(name, '.');
+    const auto lib_name = Lua::getInstance().getLibraryName();
+    const auto lib_push = std::string(name_exploded[0]) == lib_name;
 
     // this is also where the value that will be added to stack lives
-    const int stack_offset = lua_gettop(m_state);
+    const int stack_offset = lua_gettop(lua);
     if (stack_offset == 0) {
         LOG_ERROR("Expected at least 1 values on Lua stack, but received " << stack_offset << " instead");
     }
 
-    const auto name_exploded = utils::string_explode(name, '.');
+    // top-level or rotate
+    if (std::string(name_exploded[0]) == lib_name) {
+        lua_getglobal(lua, lib_name);
+        if (lua_isnoneornil(lua, stack_offset + 1)) {
+            lua_pop(lua, 1);
 
-    // top-level
-    lua_getglobal(m_state, m_libName);
+            lua_newtable(lua);
+            lua_setglobal(lua, lib_name);
 
-    // create new global Clua API if it does not exist
-    if (lua_isnoneornil(m_state, stack_offset + 1)) {
-        lua_pop(m_state, 1);
+            lua_getglobal(lua, lib_name);
+        } else {
+            // Otherwise, verify that it is a table
+            if (!lua_istable(lua, stack_offset + 1)) {
+                lua_pop(lua, 1);
 
-        lua_newtable(m_state);
-        lua_setglobal(m_state, m_libName);
+                std::string error ("Tried to create '");
+                error.append(lib_name);
+                error.append("' but it already exists, and is not a table");
 
-        lua_getglobal(m_state, m_libName);
-    } else {
-        // Otherwise, verify that it is a table
-        if (!lua_istable(m_state, stack_offset + 1)) {
-            lua_pop(m_state, 1);
-
-            std::string error ("Tried to create '");
-            error.append(m_libName);
-            error.append("' but it already exists, and is not a table");
-
-            throw std::runtime_error(error.c_str());
+                throw std::runtime_error(error.c_str());
+            }
         }
+    } else {
+        lua_rotate(lua, -2, 1);
     }
 
     /** Bind value */
-    Lua::bindInternal(name, m_state);
+    Lua::bindInternal(name, lua);
 
     /** BindInternal doesn't clean top level - pop it */
-    lua_pop(m_state, 1);
-
-    return *this;
-}
-void Lua::bind(const char* name, lua_State* lua) {
-    if (lua_gettop(lua) < 2) {
-        LOG_ERROR("Expected at least 2 values on Lua stack, but received " << std::to_string(lua_gettop(lua)) << " instead");
+    if (lib_push) {
+        lua_pop(lua, 1);
     }
-    /** Rotate */
-    lua_rotate(lua, -2, 1);
-    /** Index */
-    Lua::bindInternal(name, lua);
+
+    std::cout << "binding " << name << ":\n";
+    dump();
+    std::cout << "\n";
 }
 void Lua::bindInternal(const char* name, lua_State* lua) {
     // Subtract 1 because of top level
@@ -208,181 +379,4 @@ void Lua::bindInternal(const char* name, lua_State* lua) {
 
     // cleanup stack - leave the toplevel
     lua_pop(lua, local_stack_offset);
-}
-
-Lua& Lua::load_string(const char* script) {
-    (void) luaL_loadstring(m_state, script);
-    lua_pop(m_state, 1);
-    return *this;
-}
-Lua& Lua::call(const char* script, int nargs, int nresults) {
-    Lua::call(script, m_state, nargs, nresults);
-    return *this;
-}
-void Lua::call(const char* script, lua_State* lua, int nargs, int nresults) {
-    (void) luaL_loadstring(lua, script);
-    lua_insert(lua, -nargs - 1);
-    (void)lua_call(lua, nargs, nresults);
-}
-
-Lua& Lua::pcall(const char *script, int nargs, int nresults) {
-    Lua::pcall(script, m_state, nargs, nresults);
-    return *this;
-}
-void Lua::pcall(const char* script, lua_State* lua, int nargs, int nresults) {
-    (void) luaL_loadstring(lua, script);
-    lua_insert(lua, -nargs - 1);
-    const int result = lua_pcall(lua, nargs, nresults, -2);
-    switch(result) {
-        case LUA_OK:
-            break;
-        case LUA_ERRRUN:
-            std::cerr << "Calling a script with runtime error produced an error string: " << lua_tostring(lua, -1) << std::endl;
-            lua_pop(lua, 1);
-            break;
-        case LUA_ERRMEM:
-            std::cerr << "Memory allocation error occurred" << std::endl;
-            lua_pop(lua, 1);
-            break;
-        case LUA_ERRERR:
-            std::cerr << "Error occurred while running custom error delegate" << std::endl;
-            lua_pop(lua, 1);
-            break;
-        default:
-            std::cerr << "Undefined error occurred" << std::endl;
-            lua_pop(lua, 1);
-            break;
-    }
-}
-
-Lua& Lua::pcall(int nargs, int nresults) {
-    Lua::pcall(m_state, nargs, nresults);
-    return *this;
-}
-void Lua::pcall(lua_State* lua, int nargs, int nresults) {
-    const int result = lua_pcall(lua, nargs, nresults, -2);
-    switch(result) {
-        case LUA_OK:
-            break;
-        case LUA_ERRRUN:
-            std::cerr << "Calling a script with runtime error produced an error string: " << lua_tostring(lua, -1) << std::endl;
-            lua_pop(lua, 1);
-            break;
-        case LUA_ERRMEM:
-            std::cerr << "Memory allocation error occurred" << std::endl;
-            lua_pop(lua, 1);
-            break;
-        case LUA_ERRERR:
-            std::cerr << "Error occurred while running custom error delegate" << std::endl;
-            lua_pop(lua, 1);
-            break;
-        default:
-            std::cerr << "Undefined error occurred" << std::endl;
-            lua_pop(lua, 1);
-            break;
-    }
-}
-
-void Lua::push(lua_State* lua) {
-    lua_pushnil(lua);
-}
-Lua& Lua::push() {
-    Lua::push(m_state);
-    return *this;
-}
-
-void Lua::pushvalue(const int &index, lua_State* lua) {
-    lua_pushvalue(lua, index);
-}
-Lua& Lua::pushvalue(const int &index) {
-    Lua::pushvalue(index, m_state);
-    return *this;
-}
-
-void Lua::pushtable(lua_State* lua) {
-    lua_newtable(lua);
-}
-Lua& Lua::pushtable() {
-    Lua::pushtable(m_state);
-    return *this;
-}
-
-void Lua::push(const float &n, lua_State* lua) {
-    lua_pushnumber(lua, n);
-}
-Lua& Lua::push(const float &n) {
-    Lua::push(n, m_state);
-    return *this;
-}
-
-void Lua::push(const int &n, lua_State* lua) {
-    lua_pushinteger(lua, n);
-}
-Lua& Lua::push(const int &n) {
-    Lua::push(n, m_state);
-    return *this;
-}
-
-void Lua::push(const char *n, lua_State* lua) {
-    lua_pushstring(lua, n);
-}
-Lua& Lua::push(const char *n) {
-    Lua::push(n, m_state);
-    return *this;
-}
-
-void Lua::push(const bool &n, lua_State* lua) {
-    lua_pushboolean(lua, n);
-}
-Lua& Lua::push(const bool &n) {
-    Lua::push(n, m_state);
-    return *this;
-}
-
-void Lua::push(int (*c)(lua_State *), lua_State* lua) {
-    lua_pushcfunction(lua, c);
-}
-Lua& Lua::push(int (*c)(lua_State *)) {
-    Lua::push(c, m_state);
-    return *this;
-}
-
-void Lua::push(const double &n, lua_State* lua) {
-    lua_pushnumber(lua, n);
-}
-Lua &Lua::push(const double &n) {
-    Lua::push(n, m_state);
-    return *this;
-}
-
-bool Lua::load_file(const char *path, const char* mode) {
-    auto status = luaL_loadfilex(m_state, path, mode);
-    if (status != LUA_OK) {
-        std::cerr << lua_tostring(m_state, -1) << "\n";
-        lua_pop(m_state, 1);
-        return false;
-    }
-    return true;
-}
-
-void Lua::assertArguments(lua_State* lua, int n, LuaAssertArguments mode)
-{
-    int args = lua_gettop(lua);
-    switch(mode) {
-        case LUA_ARGS_AT_LEAST:
-            if (args < n) {
-                std::string err("Expected at least" + std::to_string(n) + " arguments but received " + std::to_string(args) + " instead\n");
-            }
-            break;
-        case LUA_ARGS_AT_MOST:
-            if (args > n) {
-                std::string err("Expected at most" + std::to_string(n) + " arguments but received " + std::to_string(args) + " instead\n");
-            }
-            break;
-        case LUA_ARGS_EXACT:
-            if (args != n) {
-                std::string err("Expected exactly" + std::to_string(n) + " arguments but received " + std::to_string(args) + " instead\n");
-            }
-            break;
-    }
 }

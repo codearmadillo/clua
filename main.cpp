@@ -9,9 +9,13 @@
 #endif
 
 #include "clua.h"
+#include "foundation/lua.h"
 
 int main() {
-    Clua c;
+    // Clua c;
+
+
+
     return 0;
 }
 

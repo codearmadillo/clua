@@ -35,83 +35,159 @@ class Lua {
         Lua(Lua const&)         = delete;
         void operator=(Lua const&)  = delete;
 
-        Lua& dump();
-        static void dump(lua_State* lua);
         /**
-         * Binds nested member to Lua state
-         * @param name
-         * @return
+         * Dumps current Lua stack
+         * @param luaState Lua state to use. Defaults to global application Lua state
          */
-        Lua& bind(const char* name);
-        /**
-         * Binds value on top of the stack, to table which sits below the value on top of that stack. The bound value
-         * is cleared and target table becomes the top of the stack
-         * @param name
-         * @param lua
-         */
-        static void bind(const char* name, lua_State* lua);
-        /**
-         * Obtains nested member and pushes it on top of stack if it exists, otherwise pushes nil on top of stack
-         * @param name
-         * @return Status flag indicating whether or not was member pushed
-         */
-        Lua& get(const char* name);
-        /**
-         * Obtains nested member from table on top of the stack, and pushes it on top if it exists
-         * @param name
-         * @param lua
-         */
-        static void get(const char* name, lua_State* lua);
-        Lua& call(const char* script, int nargs = 0, int nresults = 0);
-        static void call(const char* script, lua_State* lua, int nargs = 0, int nresults = 0);
-        Lua& pcall(const char* script, int nargs = 0, int nresults = 0);
-        static void pcall(const char* script, lua_State* lua, int nargs = 0, int nresults = 0);
-        /**
-         * Calls a method currently sitting on top of stack
-         * @param nargs
-         * @param nresults
-         * @return
-         */
-        Lua& pcall(int nargs = 0, int nresults = 0);
-        static void pcall(lua_State* lua, int nargs = 0, int nresults = 0);
+        static void dump(lua_State* luaState = nullptr);
 
-        bool load_file(const char* path, const char* mode = "bt");
-        Lua& load_string(const char* script);
-        lua_State* rawState() { return m_state; }
 
-        /** Push methods */
-        Lua& push();
-        Lua& pushtable();
-        Lua& pushvalue(const int& index);
-        Lua& push(const double& n);
-        Lua& push(const float& n);
-        Lua& push(const int& n);
-        Lua& push(const char* n);
-        Lua& push(const bool& n);
-        Lua& push(int (*c)(lua_State*));
+        static void bindInternal(const char* name, lua_State* lua = nullptr);
 
-        /** Static Push methods */
-        static void push(lua_State* lua);
-        static void pushtable(lua_State* lua);
-        static void pushvalue(const int& index, lua_State* lua);
-        static void push(const double& n, lua_State* lua);
-        static void push(const float& n, lua_State* lua);
-        static void push(const int& n, lua_State* lua);
-        static void push(const char* n, lua_State* lua);
-        static void push(const bool& n, lua_State* lua);
-        static void push(int (*c)(lua_State*), lua_State* lua);
+        /**
+         * Binds a value on top of the stack, to the table that sits at below the top stack value. This value needs
+         * to be a table. The bound value is cleared, and the target becomes the top of the stack
+         * @param name Name to bind
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void bind(const char* name, lua_State* luaState = nullptr);
 
-        void static assertArguments(lua_State* lua, int n, LuaAssertArguments mode);
+        /**
+         * Retrieves a member from table on top of the Lua stack, and pushes it on top of the stack if it exists.
+         * If it does not exist, pushes nil on top of the stack instead
+         * @param name Name to retrieve
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void get(const char* name, lua_State* luaState = nullptr);
+
+        /**
+         * Calls a provided script
+         * @param script Script to call
+         * @param nargs Number of arguments
+         * @param nresults Number of expected returned values
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void call(const char* script, int nargs = 0, int nresults = 0, lua_State* luaState = nullptr);
+
+        /**
+         * Calls a provided script in protected mode
+         * @param script Script to call
+         * @param nargs Number of arguments
+         * @param nresults Number of expected returned values
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void pcall(const char* script, int nargs = 0, int nresults = 0, lua_State* luaState = nullptr);
+
+        /**
+         * Calls a script on top of the stack in protected mode
+         * @param nargs Number of arguments
+         * @param nresults Number of expected returned values
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void pcall(int nargs = 0, int nresults = 0, lua_State* luaState = nullptr);
+
+        /**
+         * Calls a script on top of the stack in protected mode with 0 expected arguments and results
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void pcall(lua_State* luaState = nullptr);
+
+        /**
+         * Loads a file from path and pushes the result on top of Lua stack
+         * @param path File path
+         * @param mode File mode
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static bool load_file(const char* path, const char* mode = "bt", lua_State* luaState = nullptr);
+
+        /**
+         * Loads a string on top of the stack
+         * @param string Script to load
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void load_string(const char* string, lua_State* luaState = nullptr);
+
+
+        /**
+         * Pushes a nil value on top of Lua stack
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void pushnil(lua_State* luaState = nullptr);
+
+        /**
+         * Pushes a new table on top of Lua stack
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void pushtable(lua_State* luaState = nullptr);
+
+        /**
+         * Pushes a copy of the element at the given index onto the stack.
+         * @param index Index of element to copy
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void pushvalue(const int& index, lua_State* luaState = nullptr);
+
+        /**
+         * Pushes a double on top of Lua stack
+         * @param n Value to push onto Lua stack
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void push(const double& n, lua_State* luaState = nullptr);
+
+        /**
+         * Pushes a float on top of Lua stack
+         * @param n Value to push onto Lua stack
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void push(const float& n, lua_State* luaState = nullptr);
+
+        /**
+         * Pushes an integer on top of Lua stack
+         * @param n Value to push onto Lua stack
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void push(const int& n, lua_State* luaState = nullptr);
+
+        /**
+         * Pushes a string on top of Lua stack
+         * @param n Value to push onto Lua stack
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void push(const char* n, lua_State* luaState = nullptr);
+
+        /**
+         * Pushes a boolean on top of Lua stack
+         * @param n Value to push onto Lua stack
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void push(const bool& n, lua_State* luaState = nullptr);
+
+        /**
+         * Pushes a function on top of Lua stack
+         * @param n Value to push onto Lua stack
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void push(int (*c)(lua_State*), lua_State* luaState = nullptr);
+
+        /**
+         * Assets number of arguments available on Lua stack. This is useful in callbacks from Lua to C++
+         * @param arguments Expected number of arguments
+         * @param mode Assertion mode (at least/at most/exact)
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void assertArgs(int arguments, LuaAssertArguments mode = LUA_ARGS_EXACT, lua_State* luaState = nullptr);
     private:
         Lua();
         ~Lua();
         /**
-         * Actually binds a value to provided Lua context;
-         * Already expects the stack to have this format:
-         *  - Value
-         *  - Table
+         * Pushes correct context to top of application Lua stack. If name begins with `clua.`, the global Clua library
+         * will be pushed onto application stack. Otherwise, it will verify that a table is on top of application Lua
+         * stack
+         * @param name Name to explode
          */
-        static void bindInternal(const char* name, lua_State* lua);
+        static void ensureStackContext(const char* name, lua_State* lua = nullptr);
+        lua_State* getApplicationState();
+        const char* getLibraryName() const;
     private:
         lua_State* m_state;
         const char* m_libName { "clua" };

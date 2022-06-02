@@ -50,4 +50,7 @@ void GameState::createLuaTableAndPushToState(lua_State *lua) {
         return 0;
     }, lua);
     Lua::bind("setAsActive", lua);
+
+    Lua::dump();
+
 }
