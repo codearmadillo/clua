@@ -1,5 +1,6 @@
 function createMenuState()
     local state = clua.state.create()
+
     -- Define state-specific functionality
     state.start = function()
         print("state starting")
@@ -17,6 +18,7 @@ function createMenuState()
     state.setAsDefault = function()
         print("set as default")
     end
+
     -- Return state
     return state
 end

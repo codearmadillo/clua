@@ -7,6 +7,19 @@ extern "C" {
     #include <lauxlib.h>
 }
 
+/**
+ * Lua Types
+ * LUA_TNIL (0)
+ * LUA_TNUMBER
+ * LUA_TBOOLEAN
+ * LUA_TSTRING
+ * LUA_TTABLE
+ * LUA_TFUNCTION
+ * LUA_TUSERDATA
+ * LUA_TTHREAD
+ * LUA_TLIGHTUSERDATA
+ */
+
 enum LuaAssertArguments {
     LUA_ARGS_EXACT = 0,
     LUA_ARGS_AT_LEAST = 1,
@@ -92,6 +105,13 @@ class Lua {
     private:
         Lua();
         ~Lua();
+        /**
+         * Actually binds a value to provided Lua context;
+         * Already expects the stack to have this format:
+         *  - Value
+         *  - Table
+         */
+        static void bindInternal(const char* name, lua_State* lua);
     private:
         lua_State* m_state;
         const char* m_libName { "clua" };

@@ -4,6 +4,21 @@
 #include <iostream>
 #include <vector>
 
+#include "utils/log.h"
+
+/**
+ * Lua Types
+ * LUA_TNIL (0)
+ * LUA_TNUMBER
+ * LUA_TBOOLEAN
+ * LUA_TSTRING
+ * LUA_TTABLE
+ * LUA_TFUNCTION
+ * LUA_TUSERDATA
+ * LUA_TTHREAD
+ * LUA_TLIGHTUSERDATA
+ */
+
 Lua::Lua(): m_state(luaL_newstate()) {
     lua_gc(m_state, LUA_GCSTOP, 0);
     luaL_openlibs(m_state);
@@ -49,7 +64,7 @@ Lua& Lua::get(const char* name) {
     lua_getglobal(m_state, m_libName);
     if (lua_isnoneornil(m_state, -1) || !lua_istable(m_state, -1)) {
         lua_pop(m_state, 1);
-        throw std::runtime_error("Failed to get global 'clua' API - This happens when the API isn't initialized correctly.");
+        LOG_ERROR("Failed to get global 'clua' API - This happens when the API isn't initialized correctly.");
     }
 
     Lua::get(name, m_state);
@@ -90,7 +105,7 @@ Lua& Lua::bind(const char* name) {
     // this is also where the value that will be added to stack lives
     const int stack_offset = lua_gettop(m_state);
     if (stack_offset == 0) {
-        throw std::runtime_error("[addToLuaApi] Cannot add key to Lua API because current stack size is 0. Please push value you wish to be added to Lua stack before calling this method");
+        LOG_ERROR("Expected at least 1 values on Lua stack, but received " << stack_offset << " instead");
     }
 
     const auto name_exploded = utils::string_explode(name, '.');
@@ -119,22 +134,61 @@ Lua& Lua::bind(const char* name) {
         }
     }
 
+    /** Bind value */
+    Lua::bindInternal(name, m_state);
+
+    /** BindInternal doesn't clean top level - pop it */
+    lua_pop(m_state, 1);
+
+    return *this;
+}
+void Lua::bind(const char* name, lua_State* lua) {
+    if (lua_gettop(lua) < 2) {
+        LOG_ERROR("Expected at least 2 values on Lua stack, but received " << std::to_string(lua_gettop(lua)) << " instead");
+    }
+    /** Rotate */
+    lua_rotate(lua, -2, 1);
+    /** Index */
+    Lua::bindInternal(name, lua);
+}
+void Lua::bindInternal(const char* name, lua_State* lua) {
+    // Subtract 1 because of top level
+    const int stack_state = lua_gettop(lua);
+    const int stack_offset = stack_state - 1;
+    const auto name_exploded = utils::string_explode(name, '.');
+
+    /**
+     * Stack checks:
+     *  - Stack should have at least 2 values
+     *  - Top value is table
+     *  - Second to top is the actual value (raise warning if nil)
+     */
+    if (stack_state < 2) {
+        LOG_ERROR("Expected at least 2 values on Lua stack, but received " << stack_state << " instead");
+    }
+    if (!lua_istable(lua, -1)) {
+        LOG_ERROR("Expected top stack value to be table, but received '" << luaL_typename(lua, -1) << "' instead")
+    }
+
+    /**
+     * Bind
+     */
     // add nested subtables
     int local_stack_offset = 0;
     for (auto i = name_exploded.begin(); i != name_exploded.end() - 1; ++i) {
         auto field_name = *i;
-        auto field = lua_getfield(m_state, stack_offset + local_stack_offset + 1, field_name.c_str());
+        auto field = lua_getfield(lua, stack_offset + local_stack_offset + 1, field_name.c_str());
 
-        if (lua_isnoneornil(m_state, local_stack_offset + stack_offset + 2)) {
-            lua_pop(m_state, 1);
+        if (lua_isnoneornil(lua, local_stack_offset + stack_offset + 2)) {
+            lua_pop(lua, 1);
 
-            lua_newtable(m_state);
-            lua_setfield(m_state, local_stack_offset + stack_offset + 1, field_name.c_str());
+            lua_newtable(lua);
+            lua_setfield(lua, local_stack_offset + stack_offset + 1, field_name.c_str());
 
-            field = lua_getfield(m_state, stack_offset + local_stack_offset + 1, field_name.c_str());
+            field = lua_getfield(lua, stack_offset + local_stack_offset + 1, field_name.c_str());
         } else {
-            if (!lua_istable(m_state, local_stack_offset + stack_offset + 2)) {
-                lua_pop(m_state, 1);
+            if (!lua_istable(lua, local_stack_offset + stack_offset + 2)) {
+                lua_pop(lua, 1);
 
                 std::string error ("Tried to create member'");
                 error.append(field_name);
@@ -147,31 +201,13 @@ Lua& Lua::bind(const char* name) {
     }
 
     // move value to the top of the stack
-    lua_rotate(m_state, stack_offset, local_stack_offset + 1);
+    lua_rotate(lua, stack_offset, local_stack_offset + 1);
 
     // set field
-    lua_setfield(m_state, stack_offset + local_stack_offset, name_exploded[name_exploded.size() - 1].c_str());
+    lua_setfield(lua, stack_offset + local_stack_offset, name_exploded[name_exploded.size() - 1].c_str());
 
-    // cleanup stack - dont forget to cleanup toplevel global table, hence +1
-    lua_pop(m_state, local_stack_offset + 1);
-
-    /**
-     * Lua Types
-     * LUA_TNIL (0)
-     * LUA_TNUMBER
-     * LUA_TBOOLEAN
-     * LUA_TSTRING
-     * LUA_TTABLE
-     * LUA_TFUNCTION
-     * LUA_TUSERDATA
-     * LUA_TTHREAD
-     * LUA_TLIGHTUSERDATA
-     */
-
-    return *this;
-}
-void Lua::bind(const char* name, lua_State* lua) {
-
+    // cleanup stack - leave the toplevel
+    lua_pop(lua, local_stack_offset);
 }
 
 Lua& Lua::load_string(const char* script) {
