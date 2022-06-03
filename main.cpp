@@ -10,12 +10,10 @@
 
 #include "clua.h"
 #include "foundation/lua.h"
+#include <iostream>
 
 int main() {
-    // Clua c;
-
-
-
+    Clua c;
     return 0;
 }
 

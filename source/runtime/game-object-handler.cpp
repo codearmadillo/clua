@@ -14,5 +14,5 @@ void GameObjectHandler::setBindings() {
         }
         return 0;
     });
-    Lua::bind("clua.create.object");
+    Lua::set_global("clua.create.object");
 }

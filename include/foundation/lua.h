@@ -41,24 +41,49 @@ class Lua {
          */
         static void dump(lua_State* luaState = nullptr);
 
-
-        static void bindInternal(const char* name, lua_State* lua = nullptr);
-
         /**
-         * Binds a value on top of the stack, to the table that sits at below the top stack value. This value needs
-         * to be a table. The bound value is cleared, and the target becomes the top of the stack
-         * @param name Name to bind
-         * @param luaState Lua state to use. Defaults to global application Lua state
-         */
-        static void bind(const char* name, lua_State* luaState = nullptr);
-
-        /**
-         * Retrieves a member from table on top of the Lua stack, and pushes it on top of the stack if it exists.
-         * If it does not exist, pushes nil on top of the stack instead
-         * @param name Name to retrieve
+         * Gets a value from table on top of the stack, and sets it as new top of the stack (-1|+1)
+         * @param name Scoped name
          * @param luaState Lua state to use. Defaults to global application Lua state
          */
         static void get(const char* name, lua_State* luaState = nullptr);
+
+        /**
+         * Gets a value from global variable, and sets it as new top of the stack (+1)
+         * @param name Scoped name
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void get_global(const char* name, lua_State* luaState = nullptr);
+
+        /**
+         * Checks if value exists in global scope
+         * @param name Scoped name
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static bool exists_global(const char* name, lua_State* luaState = nullptr);
+
+        /**
+         * Checks if value exists in table on top of the stack
+         * @param name Scoped name
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static bool exists(const char* name, lua_State* luaState = nullptr);
+
+        /**
+         * Adds value on top of the stack to table which is under the value on the same stack (-2)
+         * @param name Scoped name
+         * @param clearStack If true, the table is removed from the stack when finished
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void set(const char* name, bool clearStack = false, lua_State* luaState = nullptr);
+
+        /**
+         * Adds value on top of the stack to global variable in Lua state (-1)
+         * @param name Scoped name
+         * @param clearStack If true, the table is removed from the stack when finished
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void set_global(const char* name, bool clearStack = true, lua_State* luaState = nullptr);
 
         /**
          * Calls a provided script
@@ -85,12 +110,6 @@ class Lua {
          * @param luaState Lua state to use. Defaults to global application Lua state
          */
         static void pcall(int nargs = 0, int nresults = 0, lua_State* luaState = nullptr);
-
-        /**
-         * Calls a script on top of the stack in protected mode with 0 expected arguments and results
-         * @param luaState Lua state to use. Defaults to global application Lua state
-         */
-        static void pcall(lua_State* luaState = nullptr);
 
         /**
          * Loads a file from path and pushes the result on top of Lua stack
@@ -185,9 +204,7 @@ class Lua {
          * stack
          * @param name Name to explode
          */
-        static void ensureStackContext(const char* name, lua_State* lua = nullptr);
         lua_State* getApplicationState();
-        const char* getLibraryName() const;
     private:
         lua_State* m_state;
         const char* m_libName { "clua" };

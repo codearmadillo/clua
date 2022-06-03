@@ -130,7 +130,7 @@ Window &Window::setBindings() {
 
         return 0;
     });
-    Lua::bind("clua.window.setWidth");
+    Lua::set_global("clua.window.setWidth");
 
     Lua::push([](lua_State* lua){
         Lua::assertArgs(1, LUA_ARGS_EXACT, lua);
@@ -140,7 +140,7 @@ Window &Window::setBindings() {
 
         return 0;
     });
-    Lua::bind("clua.window.setHeight");
+    Lua::set_global("clua.window.setHeight");
 
     Lua::push([](lua_State* lua){
         Lua::assertArgs(2, LUA_ARGS_EXACT, lua);
@@ -152,7 +152,7 @@ Window &Window::setBindings() {
 
         return 0;
     });
-    Lua::bind("clua.window.setSize");
+    Lua::set_global("clua.window.setSize");
 
     Lua::push([](lua_State* lua){
         Lua::assertArgs(1, LUA_ARGS_EXACT, lua);
@@ -162,7 +162,7 @@ Window &Window::setBindings() {
 
         return 0;
     });
-    Lua::bind("clua.window.setTitle");
+    Lua::set_global("clua.window.setTitle");
 
     return *this;
 }

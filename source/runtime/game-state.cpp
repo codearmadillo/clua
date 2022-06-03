@@ -15,6 +15,7 @@ void GameState::createLuaTableAndPushToState(lua_State *lua) {
     Lua::pushtable(lua);
 
     // Bind methods
+    /*
     Lua::push([](lua_State* l){
         std::cout << "start\n";
         return 0;
@@ -52,5 +53,6 @@ void GameState::createLuaTableAndPushToState(lua_State *lua) {
     Lua::bind("setAsActive", lua);
 
     Lua::dump();
+     */
 
 }

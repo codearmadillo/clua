@@ -14,23 +14,23 @@ void GameStateHandler::setBindings() {
         // Return value
         return 1;
     });
-    Lua::bind("clua.state.create");
+    Lua::set_global("clua.state.create");
 
     Lua::push([](lua_State* lua){
         LOG_INFO("Destroying state\n");
         return 0;
     });
-    Lua::bind("clua.state.destroy");
+    Lua::set_global("clua.state.destroy");
 
     Lua::push([](lua_State* lua){
         LOG_INFO("Freezing state\n");
         return 0;
     });
-    Lua::bind("clua.state.freeze");
+    Lua::set_global("clua.state.freeze");
 
     Lua::push([](lua_State* lua){
         LOG_INFO("Unfreezing state\n");
         return 0;
     });
-    Lua::bind("clua.state.unfreeze");
+    Lua::set_global("clua.state.unfreeze");
 }

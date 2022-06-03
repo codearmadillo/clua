@@ -13,11 +13,13 @@ void Keyboard::setBindings() {
     Lua::push([](lua_State* lua){
         return 0;
     });
-    Lua::bind("clua.keyboard.keyPressed");
+    Lua::set_global("clua.keyboard.keyPressed");
+
     Lua::push([](lua_State* lua){
         return 0;
     });
-    Lua::bind("clua.keyboard.keyReleased");
+    Lua::set_global("clua.keyboard.keyReleased");
+
     Lua::push([](lua_State* lua){
         auto keyName = luaL_checkstring(lua, 1);
         auto keyState = Keyboard::getInstance().getKeyState(keyName);
@@ -26,7 +28,7 @@ void Keyboard::setBindings() {
 
         return 1;
     });
-    Lua::bind("clua.keyboard.isKeyDown");
+    Lua::set_global("clua.keyboard.isKeyDown");
 }
 void Keyboard::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Keyboard::getInstance().setKeyMap(key, scancode, action);
@@ -56,7 +58,7 @@ void Keyboard::fireOnKeyDown(int key, int scancode) {
     if (name == nullptr) {
         return;
     }
-    Lua::get("clua.keyboard.keyPressed");
+    Lua::get_global("clua.keyboard.keyPressed");
     Lua::push(name);
     Lua::pcall(1, 0);
 }
