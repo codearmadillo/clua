@@ -21,6 +21,9 @@ void Runtime::onWindowFrame() {
     Lua::pcall(0, 0);
 }
 void Runtime::setBindings() {
+    /**
+     * Clua Runtime
+     */
     Lua::push([](lua_State* lua){
         LOG_INFO("Starting application\n");
         return 0;

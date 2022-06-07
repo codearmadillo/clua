@@ -7,6 +7,4 @@ function clua.start()
     clua.window.setTitle('New game')
     -- Create states
     states.menu = createMenuState()
-    -- Set menu as default state
-    states.menu.setAsDefault()
 end
