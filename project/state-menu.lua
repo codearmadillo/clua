@@ -1,3 +1,10 @@
 function createMenuState()
-    return 0
+    local state = clua.create.state()
+
+    function state.start()
+        print("ola")
+    end
+    state.start();
+
+    return state
 end

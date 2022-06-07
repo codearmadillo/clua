@@ -32,7 +32,7 @@ lua_State* Lua::getApplicationState() {
     return m_state;
 }
 
-void Lua::dump(lua_State* luaState) {
+void Lua::dump_stack(lua_State* luaState) {
     auto lua = luaState ?: Lua::getInstance().getApplicationState();
     int top = lua_gettop(lua);
     std::cout << "------------------- Starting Lua stack dump -------------------\n";
@@ -61,6 +61,10 @@ void Lua::dump(lua_State* luaState) {
         }
     };
     std::cout << "------------------ Lua dump finished -------------------\n\n\n";
+}
+
+void Lua::get_stack(lua_State *luaState) {
+
 }
 
 void Lua::call(const char* script, int nargs, int nresults, lua_State* luaState) {
@@ -270,6 +274,7 @@ bool Lua::exists_global(const char* name, lua_State* luaState) {
 void Lua::set(const char *name, bool clearTable, lua_State *luaState) {
     auto lua = luaState ?: Lua::getInstance().getApplicationState();
     const auto name_exploded = utils::string_explode(name, '.');
+    const auto scoped = name_exploded.size() > 1;
 
     // Ensure a table sits on top of the stack
     if (lua_gettop(lua) < 2) {
@@ -280,6 +285,8 @@ void Lua::set(const char *name, bool clearTable, lua_State *luaState) {
     }
 
     lua_rotate(lua, -2, 1);
+
+    int intermediates = 0;
 
     for (int i = 0; i < name_exploded.size(); i++) {
         if (i == name_exploded.size() - 1) {
@@ -292,13 +299,23 @@ void Lua::set(const char *name, bool clearTable, lua_State *luaState) {
              */
             // Move destination table under value
             lua_insert(lua, -name_exploded.size() - 1);
-            // Pop intermediates - Not base and final tables
-            lua_pop(lua, name_exploded.size() - 2);
-            // Move original table under destination table
-            lua_insert(lua, -3);
+
+            if (intermediates - 1 > 0) {
+                lua_pop(lua, intermediates - 1);
+            }
+
+            // If scoped structure, move base table under destination table
+            if (scoped) {
+                lua_insert(lua, -3);
+            }
+
             // Set field
             lua_setfield(lua, -2, name_exploded[i].c_str());
-            lua_pop(lua, 1);
+
+            // Remove destination from stack if name is scoped (otherwise destination is base)
+            if (scoped) {
+                lua_pop(lua, 1);
+            }
         } else {
             lua_getfield(lua, -1, name_exploded[i].c_str());
             if (lua_isnoneornil(lua, -1)) {
@@ -308,6 +325,8 @@ void Lua::set(const char *name, bool clearTable, lua_State *luaState) {
                 lua_setfield(lua, -2, name_exploded[i].c_str());
 
                 lua_getfield(lua, -1, name_exploded[i].c_str());
+
+                intermediates++;
             } else if (!lua_istable(lua, -1)) {
                 LOG_ERROR("Tried to index '" << name_exploded[i] << "' in '" << name << "' but value at the given index was a '" << luaL_typename(lua, -1) << "'");
             }
@@ -317,15 +336,30 @@ void Lua::set(const char *name, bool clearTable, lua_State *luaState) {
     if (clearTable) {
         lua_pop(lua, 1);
     }
+
+
 }
 
 void Lua::set_global(const char *name, bool clearTable, lua_State *luaState) {
     auto lua = luaState ?: Lua::getInstance().getApplicationState();
     const auto name_exploded = utils::string_explode(name, '.');
+    const auto nested = name_exploded.size() > 1;
+
+    // If value is not nested, just set the value right away
+    if (!nested) {
+        lua_setglobal(lua, name_exploded[0].c_str());
+
+        if(!clearTable) {
+            lua_getglobal(lua, name_exploded[0].c_str());
+        }
+
+        return;
+    }
 
     // Ensure global exists and it is a table
     lua_getglobal(lua, name_exploded[0].c_str());
 
+    // If value is not nested, just set the value right away
     if (lua_isnoneornil(lua, -1)) {
         lua_pop(lua, 1);
 
@@ -337,33 +371,43 @@ void Lua::set_global(const char *name, bool clearTable, lua_State *luaState) {
         LOG_ERROR("Tried to set '" << name << "' but '" << name_exploded[0] << "' is not a table");
     }
 
+    int intermediates = 0;
+
     // Iterate through remaining fields and build structure
-    if(name_exploded.size() > 1) {
-        for (int i = 1; i < name_exploded.size() - 1; i++) {
+    for (int i = 1; i < name_exploded.size() - 1; i++) {
+        lua_getfield(lua, -1, name_exploded[i].c_str());
+
+        // Create field if it does not exist
+        if(lua_isnoneornil(lua, -1)) {
+            lua_pop(lua, 1);
+
+            lua_newtable(lua);
+            lua_setfield(lua, -2, name_exploded[i].c_str());
+
             lua_getfield(lua, -1, name_exploded[i].c_str());
-
-            // Create field if it does not exist
-            if(lua_isnoneornil(lua, -1)) {
-                lua_pop(lua, 1);
-
-                lua_newtable(lua);
-                lua_setfield(lua, -2, name_exploded[i].c_str());
-
-                lua_getfield(lua, -1, name_exploded[i].c_str());
-            } else if (!lua_istable(lua, -1)) {
-                LOG_ERROR("Tried to set '" << name << "' but '" << name_exploded[i] << "' is not a table");
-            }
+        } else if (!lua_istable(lua, -1)) {
+            LOG_ERROR("Tried to set '" << name << "' but '" << name_exploded[i] << "' is not a table");
         }
+
+        intermediates++;
     }
 
+    // Get stack offset - How many steps do we need to rotate the value
+    int rotateBy = intermediates + 1;
+
     // Move value to top of the stack
-    lua_rotate(lua, name_exploded.size() * (-1), name_exploded.size() - 1);
+    lua_rotate(lua, -rotateBy - 1, rotateBy);
 
     // Set value
     lua_setfield(lua, -2, name_exploded[name_exploded.size() - 1].c_str());
 
-    // Cleanup
-    lua_pop(lua, name_exploded.size() - (clearTable ? 1 : 2));
+    // Remove intermediates. If required, cleanup the table
+    lua_pop(lua, intermediates);
+
+    // Cleanup underlying table
+    if (clearTable) {
+        lua_pop(lua, 1);
+    }
 }
 
 int Lua::set_ref(int index, lua_State *luaState) {

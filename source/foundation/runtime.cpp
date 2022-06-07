@@ -61,5 +61,17 @@ void Runtime::setRuntimeBindings() {
 }
 
 void Runtime::setStateBindings() {
+    Lua::push([](lua_State* lua){
+        // Create state
+        auto pair = Runtime::getInstance().m_gameStateContainer.create();
+        auto state = pair.second;
 
+        state->setBindings();
+        state->pushToStack();
+
+        Lua::dump_stack();
+
+        return 1;
+    });
+    Lua::set_global("clua.create.state");
 }

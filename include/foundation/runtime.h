@@ -1,5 +1,7 @@
 #pragma once
 
+#include "runtime/container/game-state.h"
+
 class Runtime {
     public:
         static Runtime& getInstance() {
@@ -18,4 +20,6 @@ class Runtime {
         ~Runtime();
         void setRuntimeBindings();
         void setStateBindings();
+    private:
+        GameStateContainer m_gameStateContainer;
 };

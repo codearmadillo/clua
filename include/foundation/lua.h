@@ -39,7 +39,13 @@ class Lua {
          * Dumps current Lua stack
          * @param luaState Lua state to use. Defaults to global application Lua state
          */
-        static void dump(lua_State* luaState = nullptr);
+        static void dump_stack(lua_State* luaState = nullptr);
+
+        /**
+         * Gets information about provided stack
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void get_stack(lua_State* luaState = nullptr);
 
         /**
          * Gets a value from table on top of the stack, and sets it as new top of the stack (-1|+1)
