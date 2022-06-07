@@ -13,9 +13,12 @@ void Runtime::onAfterWindowClose() {
     Lua::pcall(0, 0);
 }
 void Runtime::onWindowFrame() {
+    // Update state
     Lua::get_global("clua.update");
     Lua::push(Window::getInstance().getDeltaTime());
     Lua::pcall(1, 0);
+
+    // Update current state
 
     Lua::get_global("clua.draw");
     Lua::pcall(0, 0);
@@ -65,11 +68,6 @@ void Runtime::setStateBindings() {
         // Create state
         auto pair = Runtime::getInstance().m_gameStateContainer.create();
         auto state = pair.second;
-
-        state->setBindings();
-        state->pushToStack();
-
-        Lua::dump_stack();
 
         return 1;
     });

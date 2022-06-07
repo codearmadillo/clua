@@ -2,19 +2,14 @@
 #include "foundation/lua.h"
 
 GameState::GameState(uint8_t id): m_id(id) {
-
+    setBindings();
 }
 
 void GameState::setBindings() {
+    // Create reference in registry
     Lua::pushtable();
+    m_ref = Lua::set_ref();
 
-    Lua::push([](lua_State* lua){
-        std::cout << "Start\n";
-        return 0;
-    });
-    Lua::set("start", false);
-}
-
-void GameState::pushToStack() {
-
+    // Get back the table
+    Lua::get_ref(m_ref);
 }

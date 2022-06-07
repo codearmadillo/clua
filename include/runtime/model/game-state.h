@@ -6,8 +6,9 @@
 class GameState {
     public:
         explicit GameState(uint8_t id);
+    private:
         void setBindings();
-        void pushToStack();
     private:
         const uint8_t m_id;
+        int m_ref;
 };
