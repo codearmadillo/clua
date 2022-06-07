@@ -38,28 +38,28 @@ void Lua::dump(lua_State* luaState) {
     std::cout << "------------------- Starting Lua stack dump -------------------\n";
     if (top == 0) {
         std::cout << "Stack is empty\n";
-        return;
-    }
-    for (int i = 1; i <= top; i++) {
-        printf("%d\t%s\t", i, luaL_typename(lua,i));
-        switch (lua_type(lua, i)) {
-            case LUA_TNUMBER:
-                printf("%g\n",lua_tonumber(lua,i));
-                break;
-            case LUA_TSTRING:
-                printf("%s\n",lua_tostring(lua,i));
-                break;
-            case LUA_TBOOLEAN:
-                printf("%s\n", (lua_toboolean(lua, i) ? "true" : "false"));
-                break;
-            case LUA_TNIL:
-                printf("%s\n", "nil");
-                break;
-            default:
-                printf("%p\n",lua_topointer(lua,i));
-                break;
+    } else {
+        for (int i = 1; i <= top; i++) {
+            printf("%d\t%s\t", i, luaL_typename(lua,i));
+            switch (lua_type(lua, i)) {
+                case LUA_TNUMBER:
+                    printf("%g\n",lua_tonumber(lua,i));
+                    break;
+                case LUA_TSTRING:
+                    printf("%s\n",lua_tostring(lua,i));
+                    break;
+                case LUA_TBOOLEAN:
+                    printf("%s\n", (lua_toboolean(lua, i) ? "true" : "false"));
+                    break;
+                case LUA_TNIL:
+                    printf("%s\n", "nil");
+                    break;
+                default:
+                    printf("%p\n",lua_topointer(lua,i));
+                    break;
+            }
         }
-    }
+    };
     std::cout << "------------------ Lua dump finished -------------------\n\n\n";
 }
 
@@ -179,7 +179,22 @@ void Lua::get(const char* name, lua_State* luaState) {
     auto lua = luaState ?: Lua::getInstance().getApplicationState();
     const auto name_exploded = utils::string_explode(name, '.');
 
-    throw std::runtime_error("Not implemented");
+    if(lua_isnoneornil(lua, -1) || !lua_istable(lua, -1)) {
+        LOG_ERROR("Tried to get '" << name << "' but '" << name_exploded[0] << "' was '" << luaL_typename(lua, -1) << "'")
+    }
+
+    for (int i = 0; i < name_exploded.size(); i++) {
+        lua_getfield(lua, -1, name_exploded[i].c_str());
+
+        if (i == name_exploded.size() - 1) {
+            lua_insert(lua, name_exploded.size() * -1);
+            lua_pop(lua, name_exploded.size() - 1);
+        } else {
+            if (lua_isnoneornil(lua, -1) || !lua_istable(lua, -1)) {
+                LOG_ERROR("Expected table at '" << name << "' ('" << name_exploded[i] << "')" << "' but it was '" << luaL_typename(lua, -1) << "'")
+            }
+        }
+    }
 }
 
 void Lua::get_global(const char *name, lua_State *luaState) {
@@ -252,22 +267,59 @@ bool Lua::exists_global(const char* name, lua_State* luaState) {
     return found;
 }
 
-void Lua::set(const char *name, bool clearStack, lua_State *luaState) {
+void Lua::set(const char *name, bool clearTable, lua_State *luaState) {
     auto lua = luaState ?: Lua::getInstance().getApplicationState();
     const auto name_exploded = utils::string_explode(name, '.');
 
-    throw std::runtime_error("Not implemented");
-
     // Ensure a table sits on top of the stack
-    if (lua_gettop(lua) == 0) {
-        LOG_ERROR("Tried to set '" << name << "' but the stack is empty");
+    if (lua_gettop(lua) < 2) {
+        LOG_ERROR("Tried to set '" << name << "' but the stack is missing table or value");
     }
-    if (lua_isnoneornil(lua, -1) || !lua_istable(lua, -1)) {
+    if (lua_isnoneornil(lua, -2) || !lua_istable(lua, -2)) {
         LOG_ERROR("Tried to set '" << name << "' but the top of the stack is not a table");
+    }
+
+    lua_rotate(lua, -2, 1);
+
+    for (int i = 0; i < name_exploded.size(); i++) {
+        if (i == name_exploded.size() - 1) {
+            /**
+             * Reorganize stack as follows:
+             * - Anything othet values
+             * - Original table
+             * - Destination table
+             * - Destination value
+             */
+            // Move destination table under value
+            lua_insert(lua, -name_exploded.size() - 1);
+            // Pop intermediates - Not base and final tables
+            lua_pop(lua, name_exploded.size() - 2);
+            // Move original table under destination table
+            lua_insert(lua, -3);
+            // Set field
+            lua_setfield(lua, -2, name_exploded[i].c_str());
+            lua_pop(lua, 1);
+        } else {
+            lua_getfield(lua, -1, name_exploded[i].c_str());
+            if (lua_isnoneornil(lua, -1)) {
+                lua_pop(lua, 1);
+
+                lua_newtable(lua);
+                lua_setfield(lua, -2, name_exploded[i].c_str());
+
+                lua_getfield(lua, -1, name_exploded[i].c_str());
+            } else if (!lua_istable(lua, -1)) {
+                LOG_ERROR("Tried to index '" << name_exploded[i] << "' in '" << name << "' but value at the given index was a '" << luaL_typename(lua, -1) << "'");
+            }
+        }
+    }
+
+    if (clearTable) {
+        lua_pop(lua, 1);
     }
 }
 
-void Lua::set_global(const char *name, bool clearStack, lua_State *luaState) {
+void Lua::set_global(const char *name, bool clearTable, lua_State *luaState) {
     auto lua = luaState ?: Lua::getInstance().getApplicationState();
     const auto name_exploded = utils::string_explode(name, '.');
 
@@ -311,5 +363,23 @@ void Lua::set_global(const char *name, bool clearStack, lua_State *luaState) {
     lua_setfield(lua, -2, name_exploded[name_exploded.size() - 1].c_str());
 
     // Cleanup
-    lua_pop(lua, name_exploded.size() - (clearStack ? 1 : 2));
+    lua_pop(lua, name_exploded.size() - (clearTable ? 1 : 2));
+}
+
+int Lua::set_ref(int index, lua_State *luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    if (lua_gettop(lua) == 0) {
+        LOG_ERROR("Cannot set a value into registry - stack is empty");
+    }
+    return luaL_ref(lua, LUA_REGISTRYINDEX);
+}
+
+void Lua::unset_ref(int index, lua_State *luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    luaL_unref(lua, LUA_REGISTRYINDEX, index);
+}
+
+void Lua::get_ref(int ref, lua_State *luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_rawgeti(lua, LUA_REGISTRYINDEX, ref);
 }

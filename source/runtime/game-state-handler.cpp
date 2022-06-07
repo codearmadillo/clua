@@ -10,7 +10,8 @@ void GameStateHandler::setBindings() {
         // Create new state
         auto state = GameStateContainer::getInstance().createState();
         // Push table to lua stack
-        state->createLuaTableAndPushToState(lua);
+        state->getRef();
+        // Lua::pushtable(lua);
         // Return value
         return 1;
     });

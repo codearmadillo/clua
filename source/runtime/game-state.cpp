@@ -5,11 +5,26 @@
 #include "utils/log.h"
 
 GameState::GameState(uint8_t id): m_id(id) {
-    LOG_INFO("creating state with id " << std::to_string(m_id));
+    setBindings();
 }
 GameState::~GameState() {
-    LOG_INFO("deleting state with id " << std::to_string(m_id));
+
 }
+void GameState::setBindings() {
+    Lua::pushtable();
+
+    Lua::push([](lua_State* lua){
+        std::cout << "start\n";
+        return 0;
+    });
+    Lua::set("start", false);
+
+    Lua::dump();
+}
+void GameState::getRef() {
+    Lua::get_ref(m_ref);
+}
+/*
 void GameState::createLuaTableAndPushToState(lua_State *lua) {
     https://devdocs.io/lua~5.4/index#luaL_ref
 
@@ -17,7 +32,7 @@ void GameState::createLuaTableAndPushToState(lua_State *lua) {
     Lua::pushtable(lua);
 
     // Bind methods
-    /*
+
     Lua::push([](lua_State* l){
         std::cout << "start\n";
         return 0;
@@ -55,6 +70,7 @@ void GameState::createLuaTableAndPushToState(lua_State *lua) {
     Lua::bind("setAsActive", lua);
 
     Lua::dump();
-     */
+
 
 }
+*/

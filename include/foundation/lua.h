@@ -72,18 +72,18 @@ class Lua {
         /**
          * Adds value on top of the stack to table which is under the value on the same stack (-2)
          * @param name Scoped name
-         * @param clearStack If true, the table is removed from the stack when finished
+         * @param clearTable If true, the table is removed from the stack when finished
          * @param luaState Lua state to use. Defaults to global application Lua state
          */
-        static void set(const char* name, bool clearStack = false, lua_State* luaState = nullptr);
+        static void set(const char* name, bool clearTable = true, lua_State* luaState = nullptr);
 
         /**
          * Adds value on top of the stack to global variable in Lua state (-1)
          * @param name Scoped name
-         * @param clearStack If true, the table is removed from the stack when finished
+         * @param clearTable If true, the table is removed from the stack when finished
          * @param luaState Lua state to use. Defaults to global application Lua state
          */
-        static void set_global(const char* name, bool clearStack = true, lua_State* luaState = nullptr);
+        static void set_global(const char* name, bool clearTable = true, lua_State* luaState = nullptr);
 
         /**
          * Calls a provided script
@@ -195,6 +195,10 @@ class Lua {
          * @param luaState Lua state to use. Defaults to global application Lua state
          */
         static void assertArgs(int arguments, LuaAssertArguments mode = LUA_ARGS_EXACT, lua_State* luaState = nullptr);
+
+        static int set_ref(int index = -1, lua_State* luaState = nullptr);
+        static void unset_ref(int index, lua_State* luaState = nullptr);
+        static void get_ref(int ref, lua_State* luaState = nullptr);
     private:
         Lua();
         ~Lua();

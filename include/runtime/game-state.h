@@ -13,7 +13,10 @@ class GameState {
     public:
         GameState(uint8_t id);
         ~GameState();
-        void createLuaTableAndPushToState(lua_State* lua);
+        void getRef();
     private:
         const uint8_t m_id;
+        int m_ref;
+    private:
+        void setBindings();
 };
