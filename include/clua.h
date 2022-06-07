@@ -5,7 +5,6 @@ class Clua {
         Clua();
         ~Clua();
     private:
-        void setModuleBindings();
-        void loadUserScripts();
-        void startApplicationWindow();
+        void bindModules();
+        void startWindow();
 };

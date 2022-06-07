@@ -21,9 +21,21 @@ void Runtime::onWindowFrame() {
     Lua::pcall(0, 0);
 }
 void Runtime::setBindings() {
-    /**
-     * Clua Runtime
-     */
+    setRuntimeBindings();
+    setStateBindings();
+}
+Runtime::Runtime() {
+}
+Runtime::~Runtime() {
+}
+
+void Runtime::loadUserSource() {
+    if (Lua::load_file("main.lua")) {
+        Lua::pcall(0, 0);
+    }
+}
+
+void Runtime::setRuntimeBindings() {
     Lua::push([](lua_State* lua){
         LOG_INFO("Starting application\n");
         return 0;
@@ -47,13 +59,7 @@ void Runtime::setBindings() {
     });
     Lua::set_global("clua.destroy");
 }
-Runtime::Runtime() {
-}
-Runtime::~Runtime() {
-}
 
-void Runtime::loadScripts() {
-    if (Lua::load_file("main.lua")) {
-        Lua::pcall(0, 0);
-    }
+void Runtime::setStateBindings() {
+
 }

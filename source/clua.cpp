@@ -6,24 +6,20 @@
 #include "foundation/rendering.h"
 
 Clua::Clua() {
-    setModuleBindings();
-    loadUserScripts();
-    startApplicationWindow();
+    bindModules();
+    startWindow();
 }
 Clua::~Clua() {
 
 }
-void Clua::setModuleBindings() {
+void Clua::bindModules() {
     Runtime::getInstance().setBindings();
     Keyboard::getInstance().setBindings();
     Window::getInstance().setBindings();
     Rendering::Module::getInstance().setBindings();
 }
 
-void Clua::loadUserScripts() {
-    Runtime::getInstance().loadScripts();
-}
-
-void Clua::startApplicationWindow() {
+void Clua::startWindow() {
+    Runtime::getInstance().loadUserSource();
     Window::getInstance().start();
 }
