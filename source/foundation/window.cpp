@@ -8,6 +8,7 @@
 #include "rendering/element.h"
 #include "rendering/vertex.h"
 #include "rendering/object-buffer.h"
+#include "utils/log.h"
 
 Window::Window(): m_deltaTime(0.0), m_lastFrameTime(0.0) {
     if (!glfwInit())
@@ -47,13 +48,19 @@ void Window::start() {
     m_lastFrameTime = glfwGetTime();
 
     // Call runtime method
-    Runtime::getInstance().onBeforeWindowStart();
+    Runtime::getInstance().process(PROCESS_APPSTART);
+    Runtime::getInstance().process(PROCESS_APPLOADSOURCE);
 
     // Set callback
     glfwSetKeyCallback(m_window, Keyboard::glfwKeyCallback);
 
+    Runtime::getInstance().process(PROCESS_APPRUNSOURCE);
+
     // Start loop
     while (!glfwWindowShouldClose(m_window)) {
+        // Frame start
+        Runtime::getInstance().process(PROCESS_FRAMESTART);
+
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -63,9 +70,13 @@ void Window::start() {
         m_lastFrameTime = currentFrameTime;
 
         // Application update loop
-        Runtime::getInstance().onWindowFrame();
+        Runtime::getInstance().process(PROCESS_FRAMEUPDATE);
+        Runtime::getInstance().process(PROCESS_FRAMEDRAW);
 
         glfwSwapBuffers(m_window);
+
+        // Frame end
+        Runtime::getInstance().process(PROCESS_FRAMEEND);
     }
 }
 
@@ -115,7 +126,7 @@ double Window::getDeltaTime() const {
 }
 
 void Window::terminate() {
-    Runtime::getInstance().onAfterWindowClose();
+    Runtime::getInstance().process(PROCESS_APPEND);
     if (m_window)
         glfwDestroyWindow(m_window);
     glfwTerminate();

@@ -155,7 +155,14 @@ void Lua::push(int (*c)(lua_State*), lua_State* luaState) {
     auto lua = luaState ?: Lua::getInstance().getApplicationState();
     lua_pushcfunction(lua, c);
 }
-
+void Lua::pushcclosure(int (*c)(lua_State *), int arguments, lua_State *luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_pushcclosure(lua, c, arguments);
+}
+void Lua::pushvoidptr(void* p, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_pushlightuserdata(lua, p);
+}
 void Lua::assertArgs(int arguments, LuaAssertArguments mode, lua_State* luaState) {
     auto lua = luaState ?: Lua::getInstance().getApplicationState();
 
@@ -426,4 +433,9 @@ void Lua::unset_ref(int index, lua_State *luaState) {
 void Lua::get_ref(int ref, lua_State *luaState) {
     auto lua = luaState ?: Lua::getInstance().getApplicationState();
     lua_rawgeti(lua, LUA_REGISTRYINDEX, ref);
+}
+
+void Lua::pop(int n, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    lua_pop(lua, n);
 }

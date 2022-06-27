@@ -69,14 +69,15 @@ For Clua application to run, you need to create at least one state. Each state t
 
 The returned table exposes this API:
 
-| Command              | Description                                                      | Usage | Arguments            |
-|----------------------|------------------------------------------------------------------|-------|----------------------|
-| `state.setAsDefault` | Sets state as default state in Clua context                      | Method | `n/a` |
-| `state.setAsActive`  | Sets state as active state                                       | Method | `n/a` |
-| `state.start`        | Runs on state creation                                           | Callback | `n/a` |
-| `state.update`       | Runs in the beginning of frame if state is active and not frozen | Callback | `n/a` |
-| `state.draw`         | Runs in the end of frame if state is active                      | Callback | `n/a` |
-| `state.destroy`      | Runs on state deletion                                           | Callback | `n/a` |
+| Command               | Description                                                      | Usage | Arguments            |
+|-----------------------|------------------------------------------------------------------|-------|----------------------|
+| `state.setAsDefault`  | Sets state as default state in Clua context                      | Method | `n/a` |
+| `state.setAsActive`   | Sets state as active state                                       | Method | `n/a` |
+| `state.update`        | Runs in the beginning of frame if state is active and not frozen | Callback | `n/a` |
+| `state.draw`          | Runs in the end of frame if state is active                      | Callback | `n/a` |
+| `state.destroy`       | Runs on state deletion                                           | Callback | `n/a` |
+| `state.onActivated`   | Runs when state is activated | Callback | `n/a` |
+| `state.onDeactivated` | Runs when state is deactivated | Callback | `n/a` |
 
 
 #### Game loop events

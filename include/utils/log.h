@@ -1,8 +1,11 @@
 #pragma once
 #include <iostream>
+#include <string>
+#include <sstream>
 
 #if NDEBUG
     #define LOG_INFO(msg)
+    #define LOG_DIAGNOSTIC(msg)
     #define LOG_ERROR(msg)
     #define LOG_WARN(msg)
 #else
@@ -11,6 +14,9 @@
     }
     #define LOG_INFO(msg) { \
         std::cout << "[INFO] " << __FILE__ << ":" << __LINE__ << " - " << msg << "\n"; \
+    }
+    #define LOG_DIAGNOSTIC(msg) { \
+        std::cout << "[DIAGNOSTIC] " << __FILE__ << ":" << __LINE__ << " - " << msg << "\n"; \
     }
     #define LOG_ERROR(msg) {        \
         std::stringstream ss;       \

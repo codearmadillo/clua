@@ -9,9 +9,6 @@ Clua::Clua() {
     bindModules();
     startWindow();
 }
-Clua::~Clua() {
-
-}
 void Clua::bindModules() {
     Runtime::getInstance().setBindings();
     Keyboard::getInstance().setBindings();
@@ -20,6 +17,5 @@ void Clua::bindModules() {
 }
 
 void Clua::startWindow() {
-    Runtime::getInstance().loadUserSource();
     Window::getInstance().start();
 }

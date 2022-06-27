@@ -3,7 +3,7 @@
 class Clua {
     public:
         Clua();
-        ~Clua();
+        ~Clua() = default;
     private:
         void bindModules();
         void startWindow();

@@ -195,6 +195,21 @@ class Lua {
         static void push(int (*c)(lua_State*), lua_State* luaState = nullptr);
 
         /**
+         * Pushes a C closure on top of Lua stack
+         * @param c Callback
+         * @param arguments How many arguments are associated with the callback
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void pushcclosure(int (*c)(lua_State*), int arguments, lua_State* luaState = nullptr);
+
+        /**
+         * Pushes a lightuserdata on top of Lua stack
+         * @param p Data to push
+         * @param luaState Lua state to use. Defaults to global application Lua state
+         */
+        static void pushvoidptr(void* p, lua_State* luaState = nullptr);
+
+        /**
          * Assets number of arguments available on Lua stack. This is useful in callbacks from Lua to C++
          * @param arguments Expected number of arguments
          * @param mode Assertion mode (at least/at most/exact)
@@ -205,6 +220,8 @@ class Lua {
         static int set_ref(int index = -1, lua_State* luaState = nullptr);
         static void unset_ref(int index, lua_State* luaState = nullptr);
         static void get_ref(int ref, lua_State* luaState = nullptr);
+
+        static void pop(int n, lua_State* luaState = nullptr);
     private:
         Lua();
         ~Lua();
