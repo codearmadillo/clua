@@ -222,6 +222,14 @@ class Lua {
         static void get_ref(int ref, lua_State* luaState = nullptr);
 
         static void pop(int n, lua_State* luaState = nullptr);
+
+        /**
+         * Returns `true` if value on position `n` of Lua stack is nil
+         * @param n Stack position
+         * @param luaState Lua state (defaults to global state)
+         * @return
+         */
+        static bool isnil(int n, lua_State* luaState = nullptr);
     private:
         Lua();
         ~Lua();

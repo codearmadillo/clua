@@ -1,4 +1,5 @@
 #include "runtime/container/game-state.h"
+#include "utils/log.h"
 
 GameStateContainer::~GameStateContainer() {
     for (auto i : m_states) {
@@ -7,17 +8,13 @@ GameStateContainer::~GameStateContainer() {
 }
 
 std::pair<uint8_t, GameState*> GameStateContainer::create() {
-    auto id = getNext();
+    auto id = m_states.size();
     m_states[id] = new GameState(id);
     return { id, m_states[id] };
 }
 
 bool GameStateContainer::has(uint8_t key) const {
     return m_states.count(key) > 0;
-}
-
-uint8_t  GameStateContainer::getNext() const {
-    return m_states.size();
 }
 
 GameState* GameStateContainer::get(uint8_t key) {

@@ -14,27 +14,9 @@
 
 #include "runtime/container/game-state.h"
 
-/*
-struct Foo {
-    void draw() const {
-        std::cout << "draw";
-    }
-    void bind() {
-        Lua::pushvoidptr(this);
-        Lua::pushcclosure([](lua_State* l){
-            const Foo* p = (const Foo*) lua_topointer(l, lua_upvalueindex(1));
-            p->draw();
-            return 0;
-        }, 1);
-    }
-};
- */
-
 int main() {
-
     Clua c;
     return 0;
-
 }
 
 

@@ -439,3 +439,8 @@ void Lua::pop(int n, lua_State* luaState) {
     auto lua = luaState ?: Lua::getInstance().getApplicationState();
     lua_pop(lua, n);
 }
+
+bool Lua::isnil(int n, lua_State* luaState) {
+    auto lua = luaState ?: Lua::getInstance().getApplicationState();
+    return lua_isnil(lua, n);
+}

@@ -43,16 +43,16 @@ class Runtime {
         void process_frameEnd();
 
         int defaultStateId() const;
-        void setDefaultStateId(int sceneId);
+        void setDefaultStateId(int stateId);
 
         int activeStateId() const;
-        void setActiveStateId(int sceneId);
+        void setActiveStateId(int stateId);
 
         GameState* getValidState();
     private:
         GameStateContainer m_gameStateContainer;
         int m_activeStateId {-1};
         int m_defaultStateId {-1};
-        bool m_isStateFrozed {false};
+        bool m_isPaused {false};
         friend class GameState;
 };

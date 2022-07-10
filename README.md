@@ -75,7 +75,6 @@ The returned table exposes this API:
 | `state.setAsActive`   | Sets state as active state                                       | Method | `n/a` |
 | `state.update`        | Runs in the beginning of frame if state is active and not frozen | Callback | `n/a` |
 | `state.draw`          | Runs in the end of frame if state is active                      | Callback | `n/a` |
-| `state.destroy`       | Runs on state deletion                                           | Callback | `n/a` |
 | `state.onActivated`   | Runs when state is activated | Callback | `n/a` |
 | `state.onDeactivated` | Runs when state is deactivated | Callback | `n/a` |
 
@@ -83,18 +82,12 @@ The returned table exposes this API:
 #### Game loop events
 The game loop runs methods on state as needed. The order of operations is this:
 
-- Init
-  - User-defined `start()` method for state runs
-  - User-defined `start()` method for objects belonging to state runs (more on objects later)
 - Update
   - User-defined `update(dt)` method for state runs
   - User-defined `update(dt)` method for objects belonging to state runs (more on objects later)
 - Draw
     - User-defined `draw()` method for state runs
     - User-defined `draw()` method for objects belonging to state runs (more on objects later)
-- Destroy
-  - User-defined `destroy()` method for objects belonging to state runs (more on objects later)
-  - User-defined `destroy()` method for state runs
   
 These callbacks run automatically.
 
@@ -106,16 +99,16 @@ states = {}
 function createMenuState()
     local state = clua.state.create()
 
-    state.start = function(self)
-        -- Create game objects
-    end
     state.update = function(deltaTime) 
         -- Change state
         if (condition) then
             states.game.setAsActive()
         end
     end
-    
+    state.draw = function()
+      
+    end  
+  
     return state
 end
 function createGameState()
