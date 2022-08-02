@@ -12,8 +12,6 @@
 #include "foundation/lua.h"
 #include <iostream>
 
-#include "runtime/container/game-state.h"
-
 int main() {
     Clua c;
     return 0;

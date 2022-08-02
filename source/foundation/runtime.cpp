@@ -5,10 +5,6 @@
 #include "utils/log.h"
 
 void Runtime::setBindings() {
-    setRuntimeBindings();
-    setStateBindings();
-}
-void Runtime::setRuntimeBindings() {
     Lua::push([](lua_State* lua){
         return 0;
     });
@@ -28,22 +24,6 @@ void Runtime::setRuntimeBindings() {
         return 0;
     });
     Lua::set_global("clua.destroy");
-
-
-}
-
-void Runtime::setStateBindings() {
-    Lua::push([](lua_State* lua){
-        // Create state
-        auto pair = Runtime::getInstance().m_gameStateContainer.create();
-        auto state = pair.second;
-
-        // Set Lua bindings for the object
-        state->setBindings();
-
-        return 1;
-    });
-    Lua::set_global("clua.state.create");
 }
 
 void Runtime::process(APPLICATION_PROCESS state) {
@@ -109,14 +89,6 @@ void Runtime::process_frameUpdate() {
 
     // Run update callback in state - This will also update any objects in the scene
     // Do not update if state (game) is frozen
-    if (!m_isPaused) {
-        auto active_state = getValidState();
-        if (active_state) {
-            active_state->process_update();
-        } else {
-            LOG_INFO("No valid state to update - Skipping");
-        }
-    }
 }
 
 void Runtime::process_frameDraw() {
@@ -127,59 +99,8 @@ void Runtime::process_frameDraw() {
     // Do not update global objects - It is up to developer to draw them
 
     // Run draw callback in state - This will also draw any objects in the scene
-    auto active_state = getValidState();
-    if (active_state) {
-        active_state->process_draw();
-    } else {
-        LOG_INFO("No valid state to draw - Skipping");
-    }
 }
 
 void Runtime::process_frameEnd() {
 
-}
-
-int Runtime::defaultStateId() const {
-    return m_defaultStateId;
-}
-
-void Runtime::setDefaultStateId(int sceneId) {
-    m_defaultStateId = sceneId;
-}
-
-int Runtime::activeStateId() const {
-    return m_defaultStateId;
-}
-
-void Runtime::setActiveStateId(int stateId) {
-    if (!m_gameStateContainer.has(stateId)) {
-        LOG_ERROR("Cannot set active scene - " << stateId << " is not valid");
-    }
-    // Run onDeactivate callback on current state
-    if (m_activeStateId > -1) {
-        auto currentStatePtr = m_gameStateContainer.get(m_activeStateId);
-        if (currentStatePtr != nullptr) {
-            currentStatePtr->onDeactivated();
-        }
-    }
-    // Set ID
-    m_activeStateId = stateId;
-    // Get state
-    auto newStatePtr = m_gameStateContainer.get(m_activeStateId);
-    newStatePtr->onActivated();
-}
-
-GameState *Runtime::getValidState() {
-    GameState* active_state = nullptr;
-    if (m_activeStateId > -1) {
-        active_state = m_gameStateContainer.get(m_activeStateId);
-    } else {
-        if (m_defaultStateId > -1) {
-            active_state = m_gameStateContainer.get(m_defaultStateId);
-        }
-    }
-    if (active_state) {
-        m_activeStateId = active_state->m_id;
-    }
-    return active_state;
 }

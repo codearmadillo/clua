@@ -1,7 +1,5 @@
 #pragma once
 
-#include "runtime/container/game-state.h"
-
 enum APPLICATION_PROCESS {
     PROCESS_APPSTART = 0,
     PROCESS_APPLOADSOURCE = 1,
@@ -26,11 +24,6 @@ class Runtime {
     private:
         Runtime() = default;
         ~Runtime() = default;
-        /**
-         * Creates developer-defined callbacks for runtime loop
-         */
-        void setRuntimeBindings();
-        void setStateBindings();
 
         void process_appStart();
         void process_appLoadSource();
@@ -41,18 +34,6 @@ class Runtime {
         void process_frameUpdate();
         void process_frameDraw();
         void process_frameEnd();
-
-        int defaultStateId() const;
-        void setDefaultStateId(int stateId);
-
-        int activeStateId() const;
-        void setActiveStateId(int stateId);
-
-        GameState* getValidState();
     private:
-        GameStateContainer m_gameStateContainer;
-        int m_activeStateId {-1};
-        int m_defaultStateId {-1};
         bool m_isPaused {false};
-        friend class GameState;
 };
